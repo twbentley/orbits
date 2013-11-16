@@ -7,9 +7,17 @@ class Sphere :
 	public Shape
 {
 public:
+	struct Ring
+	{
+		std::vector<Vector3> points;
+	};
+
 	GLuint nRings;
 	GLuint nSegments;
 	GLfloat radius;
+
+	std::vector<Triangle> triangles;
+	std::vector<Ring> rings;
 
 	Sphere(void);
 	Sphere(GLfloat radius, Vector3 vel, Vector3 pos);
@@ -20,7 +28,9 @@ public:
 	void Init(GLuint program);
 	virtual void Update();
 	void Bounding();
-	void TryCircle();
+	void GenerateVertices();
+	void GenerateTriangles();
+	void SetPoints();
 };
 
 #endif

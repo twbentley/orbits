@@ -3,11 +3,20 @@
 
 #include "Angel.h"
 #include <math.h>
+#include <vector>
 #include "AABB.h"
 
 class Shape
 {
 public:	
+	struct Triangle
+	{
+		Vector3 point1;
+		Vector3 point2;
+		Vector3 point3;
+	};
+
+
 	Vector3* vertices;
 	Vector4* base_colors;
 	Vector3* points;

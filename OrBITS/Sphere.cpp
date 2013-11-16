@@ -1,45 +1,16 @@
 #include "Sphere.h"
 
-/*
-*	Tesselation Blog entry: http://prideout.net/blog/?p=48
-*	//Compute top cap 
-		// If even numRings -> a flat cap at ring 1's y value
-		// If odd  numRings -> a 'tent-like' cap from ring 1's y value with triangles to ring 2's points
-
-	// If odd numRings i = 1, if even i = 0;
-	for(int currRing = 0||1; currRing < numRings - 1||numRings - 2; currRing++)
-	{
-		for(int currPt = 0; currPt < numSegments; currPt++)
-		{
-			if(j+1 < numSegments)
-			{
-				sphereTriangles.push(new Triangle(rings[currRing].points[currPt],   new Triangle(rings[currRing+1].points[currPt], new Triangle(rings[currRing].points[currPt+1]  );
-				sphereTriangles.push(new Triangle(rings[currRing].points[currPt+1], new Triangle(rings[currRing+1].points[currPt], new Triangle(rings[currRing+1].points[currPt+1]);
-			}
-			else
-			{
-				sphereTriangles.push(new Triangle(rings[currRing].points[currPt],   new Triangle(rings[currRing+1].points[currPt], new Triangle(rings[currRing].points[currPt+1]  );
-				sphereTriangles.push(new Triangle(rings[currRing].points[currPt+1], new Triangle(rings[currRing+1].points[currPt], new Triangle(rings[currRing+1].points[currPt+1]);
-			}
-		}
-	}
-
-	//Compute bot cap
-		// If even numRings -> a flat cap at last ring's y value
-		// If odd numRings	-> a 'tent-like' cap from last ring's y value with triangles to second-to-last ring's points
-*
-*/
-
 Sphere::Sphere(void) : Shape() { }
 
 // Parameterized constructor
 Sphere::Sphere(GLfloat width, Vector3 vel, Vector3 pos) : Shape(width, vel, pos)
 {
-	nRings = 10;
-	nSegments = 10;
+	nRings = 13;
+	nSegments = 13;
 	radius = width;// / 2;
 
-	NUM_POINTS = (nRings + 1) * (nSegments + 1);
+	//NUM_POINTS = (nRings + 1) * (nSegments + 1);
+	NUM_POINTS = (nRings * nSegments) * 2 * 3;
 	NUM_VERTS = nRings * nSegments;
 }
 
@@ -58,7 +29,9 @@ void Sphere::Init(GLuint program)
 		colors[i] = Vector4(1.0f, 0.0f, 0.0f, 0.0f); // red
 	}
 
-	TryCircle();
+	GenerateVertices();
+	GenerateTriangles();
+	SetPoints();
 
 	InitOpenGL(program);
 }
@@ -81,7 +54,7 @@ void Sphere::Update()
 	glUniformMatrix4fv(vTransLoc, 1, GL_TRUE, (GLfloat*)transMatrix);
 }
 
-void Sphere::TryCircle()
+void Sphere::GenerateVertices()
 {
 	// from an ogre 3d example http://www.ogre3d.org/tikiwiki/ManualSphereMeshes&structure=Cookbook
 
@@ -92,11 +65,15 @@ void Sphere::TryCircle()
 	GLushort verticeIndex = 0;
 	Vector3* tv = verts;
 	GLuint* ti = indices;
+	
 	// Generate the group of rings for the sphere
 	for (GLuint ring = 0; ring <= nRings; ring++)
 	{
 		GLfloat r0 = radius * sinf(ring * deltaRingAngle);
 		GLfloat y0 = radius * cosf(ring * deltaRingAngle);
+
+		rings.push_back(Ring());
+
 		// Generate the group of segments for the current ring
 		for (GLuint seg = 0; seg <= nSegments; seg++)
 		{
@@ -108,6 +85,8 @@ void Sphere::TryCircle()
 			verts[index][0] = pos[0];
 			verts[index][1] = pos[1];
 			verts[index][2] = pos[2];
+			rings[ring].points.push_back(verts[index]);
+
 			/*verts[index].position = pos;
 			verts[index].normal = pos.Normalized();
 			verts[index].color = Vector4::One;
@@ -126,10 +105,82 @@ void Sphere::TryCircle()
 		}
 	}
 
-	points = verts;
+	//points = verts;
 
-	for(int i = 0; i < NUM_POINTS; i++)
+	//for(int i = 0; i < rings.size(); i++)
+	//{
+	//	//std::cout << (points[i])[0] << " " << (points[i])[1] << " " << (points[i])[2] << std::endl;
+	//	for(int j = 0; j < rings[i].points.size(); j++)
+	//	{
+	//		std::cout << "Ring|Segment: " << i << " | " << j << " | " << rings[i].points[j].x << " | " << rings[i].points[j].y << " | " << rings[i].points[j].z << std::endl;
+	//	}
+	//}
+}
+
+void Sphere::GenerateTriangles()
+{
+	for(int currRing = 0; currRing < nRings; currRing++)
 	{
-		std::cout << (points[i])[0] << " " << (points[i])[1] << " " << (points[i])[2] << std::endl;
+		for(int currPt = 0; currPt < nSegments; currPt++)
+		{
+			if(currPt + 1 < nSegments)
+			{
+				Triangle t1  = { rings[currRing].points[currPt] , rings[currRing+1].points[currPt], rings[currRing].points[currPt+1] };
+				Triangle t2 = { rings[currRing].points[currPt+1], rings[currRing+1].points[currPt], rings[currRing+1].points[currPt+1] };
+				triangles.push_back(t1);
+				triangles.push_back(t2);
+			}
+			else
+			{
+				Triangle t1 = { rings[currRing].points[currPt],   rings[currRing+1].points[currPt], rings[currRing].points[0] };
+				Triangle t2 = { rings[currRing].points[0], rings[currRing+1].points[currPt], rings[currRing+1].points[0] };
+				triangles.push_back(t1);
+				triangles.push_back(t2);
+			}
+		}
 	}
 }
+
+void Sphere::SetPoints()
+{
+	for(int i = 0; i < NUM_POINTS; i = i + 3)
+	{
+		points[i] = triangles[i/3].point1;
+		points[i+1] = triangles[i/3].point2;
+		points[i+2] = triangles[i/3].point3;
+	}
+
+	//for(int j = 0; j < NUM_POINTS; j++)
+	//{
+	//	std::cout << points[j].x << " | " <<  points[j].y << " | " <<  points[j].x << std::endl; 
+	//}
+
+}
+
+/*
+*	Tesselation Blog entry: http://prideout.net/blog/?p=48
+*	//Compute top cap 
+		// a 'tent-like' cap from ring 1's y value with triangles to ring 2's points
+		~
+	// If odd numRings i = 1, if even i = 0;
+	for(int currRing = 0||1; currRing < numRings - 1||numRings - 2; currRing++)
+	{
+		for(int currPt = 0; currPt < numSegments; currPt++)
+		{
+			if(currPt + 1 < numSegments)
+			{
+				sphereTriangles.push(new Triangle(rings[currRing].points[currPt],   rings[currRing+1].points[currPt], rings[currRing].points[currPt+1] ));
+				sphereTriangles.push(new Triangle(rings[currRing].points[currPt+1], rings[currRing+1].points[currPt], rings[currRing+1].points[currPt+1] ));
+			}
+			else
+			{
+				sphereTriangles.push(new Triangle(rings[currRing].points[currPt],   rings[currRing+1].points[currPt], rings[currRing].points[0]  );
+				sphereTriangles.push(new Triangle(rings[currRing].points[0], rings[currRing+1].points[currPt], rings[currRing+1].points[0]);
+			}
+		}
+	}
+
+	//Compute bot cap
+		// a 'tent-like' cap from last ring's y value with triangles to second-to-last ring's points
+*
+*/

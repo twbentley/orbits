@@ -91,7 +91,7 @@ void Shape::Render()
 	glBindVertexArray(vao);
 
 	// Draw points
-	glDrawArrays(GL_LINE_LOOP, 0, NUM_POINTS);
+	glDrawArrays(GL_LINE_STRIP, 0, NUM_POINTS);
 
 	// Draw bounding box
 	aabb.Render();
