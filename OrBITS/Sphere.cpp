@@ -1,5 +1,35 @@
 #include "Sphere.h"
 
+/*
+*	Tesselation Blog entry: http://prideout.net/blog/?p=48
+*	//Compute top cap 
+		// If even numRings -> a flat cap at ring 1's y value
+		// If odd  numRings -> a 'tent-like' cap from ring 1's y value with triangles to ring 2's points
+
+	// If odd numRings i = 1, if even i = 0;
+	for(int currRing = 0||1; currRing < numRings - 1||numRings - 2; currRing++)
+	{
+		for(int currPt = 0; currPt < numSegments; currPt++)
+		{
+			if(j+1 < numSegments)
+			{
+				sphereTriangles.push(new Triangle(rings[currRing].points[currPt],   new Triangle(rings[currRing+1].points[currPt], new Triangle(rings[currRing].points[currPt+1]  );
+				sphereTriangles.push(new Triangle(rings[currRing].points[currPt+1], new Triangle(rings[currRing+1].points[currPt], new Triangle(rings[currRing+1].points[currPt+1]);
+			}
+			else
+			{
+				sphereTriangles.push(new Triangle(rings[currRing].points[currPt],   new Triangle(rings[currRing+1].points[currPt], new Triangle(rings[currRing].points[currPt+1]  );
+				sphereTriangles.push(new Triangle(rings[currRing].points[currPt+1], new Triangle(rings[currRing+1].points[currPt], new Triangle(rings[currRing+1].points[currPt+1]);
+			}
+		}
+	}
+
+	//Compute bot cap
+		// If even numRings -> a flat cap at last ring's y value
+		// If odd numRings	-> a 'tent-like' cap from last ring's y value with triangles to second-to-last ring's points
+*
+*/
+
 Sphere::Sphere(void) : Shape() { }
 
 // Parameterized constructor
