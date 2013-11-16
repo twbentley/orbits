@@ -1,0 +1,43 @@
+#ifndef SHAPE_H
+#define SHAPE_H
+
+#include "Angel.h"
+#include <math.h>
+#include "AABB.h"
+
+class Shape
+{
+public:	
+	Vector3* vertices;
+	Vector4* base_colors;
+	Vector3* points;
+	Vector4* colors;
+	Matrix4 transMatrix;
+	Matrix4 rotMatrix;
+
+	GLfloat width;
+	Vector3 vel;
+	Vector3 pos;
+	AABB aabb;
+	
+	GLuint myShaderProgram;
+	GLuint myBuffer;
+	GLuint vao;
+
+	int NUM_POINTS;
+	int NUM_VERTS;
+
+	Shape(void);
+	Shape(GLfloat width, Vector3 vel, Vector3 pos);
+	Shape(const Shape& toCopy);
+	Shape& operator= (const Shape& toCopy);
+	~Shape(void);
+
+	void InitOpenGL(GLuint program);
+	virtual void Render();
+	virtual void Update();
+	void Bounding();
+	void ComputeAABB();
+};
+
+#endif
