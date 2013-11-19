@@ -7,7 +7,7 @@ namespace Angel {
 static char*
 readShaderSource(const char* shaderFile)
 {
-    //FILE* fp = fopen(shaderFile, "r"); // VS gives warning about being insecure :-)
+    //FILE* fp = fopen(shaderFile, "r"); // VS gives error about being insecure :-)
 
     // one way to deal with warning: http://stackoverflow.com/questions/2575116/fopen-fopen-s-and-writing-to-files:
     FILE* fp;

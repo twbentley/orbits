@@ -38,8 +38,9 @@
 #  include <GLUT/glut.h>
 #else // non-Mac OS X operating systems
 #  include <GL/glew.h>
-#  include <GL/freeglut.h>
-#  include <GL/freeglut_ext.h>
+#  include <GL/glfw3.h>
+#  include <GL/freeglut.h> // TODO: NEED TO DELETE THIS
+//#  include <GL/freeglut_ext.h>
 #endif  // __APPLE__
 
 // Define a helpful macro for handling offsets into buffer objects

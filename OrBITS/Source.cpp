@@ -7,7 +7,9 @@
 // Prevent console window from opening
 #pragma comment(linker, "/subsystem:\"windows\" /entry:\"mainCRTStartup\"")
 
-// Shaper program
+// GLFW window
+GLFWwindow* window;
+// Shader program
 GLuint program;
 // Shapes in world
 Shape** shapes;
@@ -18,29 +20,45 @@ int NUM_OBJECTS = 2;
 void Initialize();
 void CreateShape();
 void Display();
-void keyboard(unsigned char key, int mouseX, int mouseY);
+void keyboard();//unsigned char key, int mouseX, int mouseY);
 void TryCircle();
 void ResolveCol(Shape& a, Shape&b);
 
 int main(int argc, char **argv)
 {
-	//srand(time(NULL));
-	glutInit(&argc, argv);
+	// GLUT
+	/*glutInit(&argc, argv);
 	glutInitDisplayMode( GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
-	//glEnable(GL_CULL_FACE);
 	glutInitWindowSize(512, 512);
 	glutInitContextVersion( 3, 2 );
 	glutInitContextProfile( GLUT_CORE_PROFILE );
-	glutCreateWindow( "A5 Polyhedrons (Bounding Buckets)" );
+	glutCreateWindow( "A5 Polyhedrons (Bounding Buckets)" );*/
+
+	// Set up glfw and display window
+	if(glfwInit() == 0) return 1;
+	window = glfwCreateWindow(512, 512, "orBITs", NULL, NULL);
+	if(window == nullptr) return 1;
+	glfwMakeContextCurrent(window);
+
+	// Set up glew
 	glewExperimental = GL_TRUE;
 	glewInit();
+	
 	Initialize();
 
-	glutKeyboardFunc( keyboard );
-	glutDisplayFunc( Display );
+	//glutKeyboardFunc( keyboard );
+	//glutDisplayFunc( Display );
 	
-	glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_CONTINUE_EXECUTION);
-	glutMainLoop();
+	//glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_CONTINUE_EXECUTION);
+	//glutMainLoop();
+
+	// GLFW "game loop"
+	while(!glfwWindowShouldClose(window))
+	{
+		Display();
+		keyboard();
+		glfwPollEvents();
+	}
 
 	// Delete objects;
 	for(int i = 0; i < NUM_OBJECTS; i++)
@@ -49,6 +67,10 @@ int main(int argc, char **argv)
 	}
 	// Delete array
 	delete [] shapes;
+
+	// Close and clean up glfw window
+	glfwDestroyWindow(window);
+	glfwTerminate();
 
 	_CrtDumpMemoryLeaks();
 }
@@ -102,26 +124,20 @@ void Display()
 	//}
 
 	glDisableClientState(GL_VERTEX_ARRAY);
-	glutSwapBuffers();
-	glutPostRedisplay();
+	//glutSwapBuffers();
+	//glutPostRedisplay();
+	glfwSwapBuffers(window);
 }
 
 // Handle keyboard input
-void keyboard(unsigned char key, int mouseX, int mouseY)
+void keyboard()//unsigned char key, int mouseX, int mouseY)
 {
-	switch( key )
-	{
-	case 033 : case 'q' : case 'Q':	// Quit game
-		//exit( EXIT_SUCCESS );
-		glutLeaveMainLoop();
-		break;
-	case 'z' : case 'Z':
+	if(glfwGetKey(window, 'Q')) // Quit Game
+		glfwSetWindowShouldClose(window, true);
+	if(glfwGetKey(window, 'Z'))
 		Matrix4::UpdateRotationMatrix(shapes[0]->rotMatrix, 'z', 2.f);
-	case 'y' : case 'Y':
+	if(glfwGetKey(window, 'Y'))
 		Matrix4::UpdateRotationMatrix(shapes[0]->rotMatrix, 'y', 2.f);
-	case 'x' : case 'X':
+	if(glfwGetKey(window, 'X'))
 		Matrix4::UpdateRotationMatrix(shapes[0]->rotMatrix, 'x', 2.f);
-	default:
-		break;
-	}
 }
