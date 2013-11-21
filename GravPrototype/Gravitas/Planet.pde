@@ -52,7 +52,7 @@ class Planet
     {
     accel = new PVector(0, 0, 0);
     accel.add(calcGravity());
-    bounding();
+      bounding();
 
     vel.add(accel);
     pos.add(vel);
