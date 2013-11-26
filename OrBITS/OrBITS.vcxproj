@@ -65,6 +65,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AABB.cpp" />
+    <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Cube.cpp" />
     <ClCompile Include="InitShader.cpp" />
     <ClCompile Include="Matrix3.cpp" />
@@ -78,12 +79,15 @@
   <ItemGroup>
     <ClInclude Include="AABB.h" />
     <ClInclude Include="Angel.h" />
+    <ClInclude Include="Camera.h" />
     <ClInclude Include="CheckError.h" />
     <ClInclude Include="Cube.h" />
+    <ClInclude Include="mat.h" />
     <ClInclude Include="Matrix3.h" />
     <ClInclude Include="Matrix4.h" />
     <ClInclude Include="Shape.h" />
     <ClInclude Include="Sphere.h" />
+    <ClInclude Include="vec.h" />
     <ClInclude Include="Vector3.h" />
     <ClInclude Include="Vector4.h" />
     <ClInclude Include="WorldData.h" />

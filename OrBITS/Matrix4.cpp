@@ -14,12 +14,20 @@ Matrix4::Matrix4(void)
 	zAngle = 0.0f;
 }
 
+// TODO: Fix all matrix constructors to be in the same order as angel
+
 // Full Parameterized Constructor
-Matrix4::Matrix4( GLfloat m00, GLfloat m01, GLfloat m02, GLfloat m03,
-	  GLfloat m10, GLfloat m11, GLfloat m12, GLfloat m13,
-	  GLfloat m20, GLfloat m21, GLfloat m22, GLfloat m23,
-	  GLfloat m30, GLfloat m31, GLfloat m32, GLfloat m33 )
+//Matrix4::Matrix4( GLfloat m00, GLfloat m01, GLfloat m02, GLfloat m03,
+//	  GLfloat m10, GLfloat m11, GLfloat m12, GLfloat m13,
+//	  GLfloat m20, GLfloat m21, GLfloat m22, GLfloat m23,
+//	  GLfloat m30, GLfloat m31, GLfloat m32, GLfloat m33 )
+//{
+Matrix4::Matrix4( GLfloat m00, GLfloat m10, GLfloat m20, GLfloat m30,
+	  GLfloat m01, GLfloat m11, GLfloat m21, GLfloat m31,
+	  GLfloat m02, GLfloat m12, GLfloat m22, GLfloat m32,
+	  GLfloat m03, GLfloat m13, GLfloat m23, GLfloat m33 )
 {
+	//matrix[0] = Vector4(m00, m01, m02, m03);
 	matrix[0][0] = m00;
 	matrix[0][1] = m01;
 	matrix[0][2] = m02;
@@ -263,7 +271,7 @@ Matrix4 matrixCompMult(const Matrix4& A, const Matrix4& B)
 	);
 }
 
-// Transpose the given matrix
+// Transpose the given matrix	// TODO: convert to static function
 Matrix4 Matrix4::transpose()
 {
 	return Matrix4

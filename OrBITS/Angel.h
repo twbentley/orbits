@@ -39,7 +39,7 @@
 #else // non-Mac OS X operating systems
 #  include <GL/glew.h>
 #  include <GL/glfw3.h>
-#  include <GL/freeglut.h> // TODO: NEED TO DELETE THIS
+//#  include <GL/freeglut.h> // TODO: NEED TO DELETE THIS
 //#  include <GL/freeglut_ext.h>
 #endif  // __APPLE__
 
