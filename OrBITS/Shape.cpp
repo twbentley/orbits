@@ -17,12 +17,31 @@ Shape::Shape(GLfloat width, Vector3 vel, Vector3 pos)
 	Matrix4::UpdatePositionMatrix(transMatrix, pos.x, pos.y, pos.z);
 }
 
+// Copy Constructor
 Shape::Shape(const Shape& toCopy)
 {
+	// Make new instances of every member
 }
 
+// Copy assignment overload
 Shape& Shape::operator= (const Shape& toCopy)
 {
+	this->aabb =  toCopy.aabb;
+	this->base_colors = toCopy.base_colors;
+	this->colors = toCopy.colors;
+	this->myBuffer = toCopy.myBuffer;
+	this->myShaderProgram = toCopy.myShaderProgram;
+	this->NUM_POINTS = toCopy.NUM_POINTS;
+	this->NUM_VERTS = toCopy.NUM_VERTS;
+	this->points = toCopy.points;
+	this->pos = toCopy.pos;
+	this->rotMatrix = toCopy.rotMatrix;
+	this->transMatrix = toCopy.transMatrix;
+	this->vao = toCopy.vao;
+	this->vel = toCopy.vel;
+	this->vertices = toCopy.vertices;
+	this->width = toCopy.width;
+
 	return *this;
 }
 
