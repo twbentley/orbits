@@ -30,7 +30,7 @@ class Planet
     float massScalar;
     if(type == SUN)    
     {
-      massScalar = 10;
+      massScalar = .1;
     }
     else if(type == PLANET)
     {
@@ -38,7 +38,7 @@ class Planet
     }
     else if(type == ASTEROID)
     {
-      massScalar = .1;
+      massScalar = .00000000000000001;
     }
     else
     {
@@ -46,9 +46,38 @@ class Planet
     }
     this.mass = massScalar*((4f/3f)*PI*(radius*radius*radius))/10f; // Volume = (4f/3f)*PI*(radius*radius*radius)
   }
+  
+  void calcType()
+  {
+    float massScalar;
+    if(type == SUN)    
+    {
+      massScalar = 1;
+      mass = 100*massScalar;
+      radius = 300;
+    }
+    else if(type == PLANET)
+    {
+      massScalar = .0001;
+      mass = 100*massScalar;
+      radius = 100;
+    }
+    else if(type == ASTEROID)
+    {
+      massScalar = .0000001;
+      mass = 100*massScalar;
+      radius = 25;
+    }
+    else
+    {
+      massScalar = 999999;
+    }
+    //this.mass = massScalar*((4f/3f)*PI*(radius*radius*radius))/10f; // Volume = (4f/3f)*PI*(radius*radius*radius)
+  }
+  
   void update()
   {
-    if(type != "")
+    if(type != SUN)
     {
     accel = new PVector(0, 0, 0);
     accel.add(calcGravity());
@@ -72,13 +101,18 @@ class Planet
     sphere(radius);
     popMatrix();
 
+    pushMatrix();
+    translate(pos.x,pos.y,pos.z);
+    ellipse(0,0,radius*2,radius*2);
+    popMatrix();
+    
     displayTrail();
   }
 
   void updateTrail()
   {
     pastPts.addLast(new PVector(pos.x, pos.y, pos.z));
-    if (pastPts.size() > 30)
+    if (pastPts.size() > 300)
     {
       pastPts.removeFirst();
     }
@@ -88,7 +122,6 @@ class Planet
   {
     if (pastPts.size() > 0)
     {
-      println(pastPts.size());
       stroke(0);
       strokeWeight(1);
       PVector curr = (PVector)pastPts.get(0);
@@ -132,11 +165,30 @@ class Planet
   void setOrbit(Planet myParent, float radius)//, PVector normal) // normal is on axis of rotation
   {
     pos = PVector.add(myParent.pos, new PVector(radius,0,0));
-    float dist = PVector.dist(pos, myParent.pos);
-    dist = radius;
+    float dist = radius;
     float velMag = (float)(Math.sqrt((myParent.mass*myParent.mass*G)/((myParent.mass + mass)*dist)));
-    //PVector initVel = PVector.
     vel = new PVector(0,0, velMag);
+  }
+  void setOrbitV2(Planet myParent, float radius, PVector normal, float rotation) // normal is axis of rotation, should also add pos or neg velocity
+  {
+    float unknownY = -normal.x/normal.y; // 0 = x1*x2 + y1*unknownY + z1*z2
+                                         // 0 = x1 + y1*unknownY
+                                         // unknownY = -x1/y1
+    PVector alongX = new PVector(1,unknownY,0); // is orthoganal to normal
+    PVector tempPos = normal.cross(alongX);     // pos from parent
+    tempPos.normalize();
+    tempPos.mult(radius);                // scale to appropriate dist out
+    // rotate about normal, use 3D Rotation Matrix
+    pos = PVector.add(myParent.pos, tempPos);   // place in world!
+    println("tempPos.mag: "+tempPos.mag()+", tempPos: " +tempPos+ ", actPos: " + pos);
+    
+    float dist = radius;
+    float velMag = (float)(Math.sqrt((myParent.mass*myParent.mass*G)/((myParent.mass + mass)*dist))); // For circular orbit
+    PVector velDir = normal.cross(tempPos);  // orthoganal to pos from origin and normal from origin
+    velDir.normalize();
+    velDir.mult(velMag);  // scale to calc'd value
+    vel = velDir;
+    vel.add(myParent.vel);
   }
   
   void bounding()

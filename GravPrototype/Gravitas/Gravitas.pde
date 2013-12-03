@@ -25,8 +25,8 @@ void setup()
   bodies = new ArrayList<Planet>();
   
   //twoOrbitInit();
-  ranParticleInit();
-  //properOrbitInit();
+  //ranParticleInit();
+  properOrbitInit();
   
   cam = new PeasyCam(this, 4500);
   cam.setMinimumDistance(50);
@@ -35,7 +35,7 @@ void setup()
 
 void  draw()
 {
-  background(255/2f); // grey
+  background(255*.75f); // grey
   
   hint(ENABLE_DEPTH_TEST);
   hint(ENABLE_DEPTH_SORT);
@@ -55,14 +55,23 @@ void properOrbitInit()
   bodies.add(p1);
   theSun = p1;
   
+  /*
   p1 = new Planet(20, new PVector(0, 0, 0), new PVector(0,0,0), PLANET);
   bodies.add(p1);
-  p1.setOrbit(theSun, 1000);
+  p1.setOrbitV2(theSun, 1000, new PVector(1,30,1), 0);
   
-  p1 = new Planet(10, new PVector(0, 0, 0), new PVector(0,0,0), ASTEROID);
+  p1 = new Planet(20, new PVector(0, 0, 0), new PVector(0,0,0), PLANET);
   bodies.add(p1);
-  p1.setOrbit(bodies.get(1), 50);
-  p1.vel = PVector.add(p1.vel, bodies.get(1).vel);
+  p1.setOrbitV2(theSun, 300, new PVector(10,-5,8), 0);
+  */
+  
+  Planet p2 = new Planet(20, new PVector(0, 0, 0), new PVector(0,0,0), PLANET);
+  bodies.add(p2);
+  p2.setOrbitV2(theSun, 2000, new PVector(10,-5,8), 0);
+  
+  p1 = new Planet(5, new PVector(0, 0, 0), new PVector(0,0,0), ASTEROID);
+  bodies.add(p1);
+  p1.setOrbitV2(p2, 100, new PVector(10,-5,8), 0);
 }
 void twoOrbitInit()
 {
