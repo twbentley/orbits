@@ -17,8 +17,6 @@ Shape** shapes;
 // Number of objects in world
 int NUM_OBJECTS = 2;
 
-GLuint vao;
-GLuint buffer;
 Camera cam;
 double prevSeconds;
 
@@ -30,11 +28,9 @@ const int SCREEN_HEIGHT = 512;
 void Initialize();
 void CreateShape();
 void Display();
-void Keyboard();//unsigned char key, int mouseX, int mouseY);
+void Keyboard();
 void TryCircle();
 void ResolveCol(Shape& a, Shape&b);
-
-// TODO: Sync up all matrices and their new constructors
 
 int main(int argc, char **argv)
 {
@@ -78,33 +74,18 @@ int main(int argc, char **argv)
 void Initialize()
 {
 	// Set world size in 3 dimensions
-	WORLD_SIZE = Vector3(100.f,100.0f,100.f);
+	WORLD_SIZE = Vector3(100.f, 100.0f, 100.f);
 
 	// Set up depth in OpenGL
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
 
-	Vector3 points[4];
-	points[0] = Vector3(-0.5f, -0.5f,  0.5f);
-	points[1] = Vector3( 0.5f, -0.5f,  0.5f);
-	points[2] = Vector3( 0.5f, -0.5f, -0.5f);
-	points[3] = Vector3(-0.5f, -0.5f, -0.5f);
-
-	// Create a vertex array object
-    glGenVertexArrays( 1, &vao );
-    glBindVertexArray( vao );
-
-    // Create and initialize a buffer object
-    glGenBuffers( 1, &buffer );
-    glBindBuffer( GL_ARRAY_BUFFER, buffer );
-    glBufferData( GL_ARRAY_BUFFER, 18 * sizeof(float), points, GL_STATIC_DRAW );
-
 	// Set the initial camera position
-	//cam.Reset();
-	cam.Translate(0.0f, 0.0f, 2.0f);
+	cam.SetInitialPosition(0.0f, 0.0f, 20.0f);
+	//cam.Translate(0.0f, 0.0f, 12.0f);
 	cam.SetViewportSize(SCREEN_WIDTH, SCREEN_HEIGHT);
 
-	// Get time
+	// Get current time
 	prevSeconds = glfwGetTime();
 
 	// Load shaders and use resulting shader program
@@ -112,15 +93,13 @@ void Initialize()
 
 	// Set up view and project matrices in shader
 	GLuint viewMat_loc = glGetUniformLocation(program, "view");
-	glUseProgram(program);
 	glUniformMatrix4fv(viewMat_loc, 1, GL_FALSE, cam.ViewMatrix());
 	GLuint projMat_loc = glGetUniformLocation(program, "projection");
-	glUseProgram(program);
-	glUniformMatrix4fv(program, 1, GL_FALSE, cam.ProjectionMatrix());
+	glUniformMatrix4fv(projMat_loc, 1, GL_FALSE, cam.ProjectionMatrix());
 	
-	Cube* cube = new Cube( 0.15f, Vector3(0.f,0.f,0.f), Vector3(0.7f,0.7f,0.f));
+	Cube* cube = new Cube( 0.15f, Vector3(0.0f, 0.f, 0.05f), Vector3(8.0f, 0.7f, -35.0f));
 	cube->Init(program);
-	Sphere* sphere = new Sphere( 0.2f, Vector3(0.f,0.f,0.f), Vector3(0.f,0.f,0.f));
+	Sphere* sphere = new Sphere( 5.0f, Vector3(0.0f, 0.f, 0.f), Vector3(0.f, 0.f, 0.f));
 	sphere->Init(program);
 
 	shapes = new Shape*[NUM_OBJECTS];
@@ -146,11 +125,6 @@ void Display()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	glUseProgram(program);
-	glBindBuffer(GL_ARRAY_BUFFER, buffer);
-	glBindVertexArray(vao);
-	glDrawArrays(GL_QUADS, 0, 4);
-
 	// Update and render all objects
 	for (int i = 0; i <  NUM_OBJECTS; i++)
 	{
@@ -167,14 +141,11 @@ void Display()
 	//	}
 	//}
 
-	//glDisableClientState(GL_VERTEX_ARRAY);
 	glfwSwapBuffers(window);
 }
 
-void cameraInputCheck() {
-	float cam_speed = 5.0f;	// Camera speed in units per second
-	float cam_rotation_speed = 20.0f;	// Camera rotation speed in degrees per second
-
+void cameraInputCheck()
+{
 	double currentSeconds = glfwGetTime();
 	double elapsed_seconds = currentSeconds - prevSeconds;
 	prevSeconds = currentSeconds;
@@ -186,51 +157,51 @@ void cameraInputCheck() {
 	// control keys
 	bool cam_moved = false;
 	if (glfwGetKey (window, 'A')) {
-		cam.Translate(cam.Right(), -cam_speed * elapsed_seconds);
+		cam.Translate(cam.Right(), -cam.move_speed * elapsed_seconds);
 		cam_moved = true;
 	}
 	if (glfwGetKey (window, 'D')) {
-		cam.Translate(cam.Right(), cam_speed * elapsed_seconds);
+		cam.Translate(cam.Right(), cam.move_speed * elapsed_seconds);
 		cam_moved = true;
 	}
 	if (glfwGetKey (window, GLFW_KEY_PAGE_UP)) {
-		cam.Translate(cam.Up(), cam_speed * elapsed_seconds);
+		cam.Translate(cam.Up(), cam.move_speed * elapsed_seconds);
 		cam_moved = true;
 	}
 	if (glfwGetKey (window, GLFW_KEY_PAGE_DOWN)) {
-		cam.Translate(cam.Up(), -cam_speed * elapsed_seconds);
+		cam.Translate(cam.Up(), -cam.move_speed * elapsed_seconds);
 		cam_moved = true;
 	}
 	if (glfwGetKey (window, 'W')) {
-		cam.Translate(cam.Forward(), -cam_speed * elapsed_seconds);
+		cam.Translate(cam.Forward(), -cam.move_speed * elapsed_seconds);
 		cam_moved = true;
 	}
 	if (glfwGetKey (window, 'S')) {
-		cam.Translate(cam.Forward(), cam_speed * elapsed_seconds);
+		cam.Translate(cam.Forward(), cam.move_speed * elapsed_seconds);
 		cam_moved = true;
 	}
 	if (glfwGetKey (window, GLFW_KEY_UP)) {
-		cam.Pitch(-cam_rotation_speed * elapsed_seconds);
+		cam.Pitch(-cam.rotation_speed * elapsed_seconds);
 		cam_moved = true;
 	}
 	if (glfwGetKey (window, GLFW_KEY_DOWN)) {
-		cam.Pitch(cam_rotation_speed * elapsed_seconds);
+		cam.Pitch(cam.rotation_speed * elapsed_seconds);
 		cam_moved = true;
 	}
 	if (glfwGetKey (window, GLFW_KEY_LEFT)) {
-		cam.Yaw(-cam_rotation_speed * elapsed_seconds);
+		cam.Yaw(-cam.rotation_speed * elapsed_seconds);
 		cam_moved = true;
 	}
 	if (glfwGetKey (window, GLFW_KEY_RIGHT)) {
-		cam.Yaw(cam_rotation_speed * elapsed_seconds);
+		cam.Yaw(cam.rotation_speed * elapsed_seconds);
 		cam_moved = true;
 	}
 	if (glfwGetKey (window, 'Z')) {
-		cam.Roll(cam_rotation_speed * elapsed_seconds);
+		cam.Roll(cam.rotation_speed * elapsed_seconds);
 		cam_moved = true;
 	}
 	if (glfwGetKey (window, 'X')) {
-		cam.Roll(-cam_rotation_speed * elapsed_seconds);
+		cam.Roll(-cam.rotation_speed * elapsed_seconds);
 		cam_moved = true;
 	}
 	if (glfwGetKey (window, ' ')) {
@@ -245,14 +216,13 @@ void cameraInputCheck() {
 		glUniformMatrix4fv(viewMat_loc, 1, GL_FALSE, cam.ViewMatrix());
 	}
 
-	float cam_zoom_speed = 0.5f;
 	bool proj_changed = false;
 	if (glfwGetKey (window, GLFW_KEY_MINUS)) {
-		cam.Zoom(cam_zoom_speed * elapsed_seconds);
+		cam.Zoom(cam.zoom_speed * elapsed_seconds);
 		proj_changed = true;
 	}
 	if (glfwGetKey (window, GLFW_KEY_EQUAL)) {
-		cam.Zoom(-cam_zoom_speed * elapsed_seconds);
+		cam.Zoom(-cam.zoom_speed * elapsed_seconds);
 		proj_changed = true;
 	}
 	// Update projection matrix

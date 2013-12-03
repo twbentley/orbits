@@ -43,7 +43,7 @@ void Sphere::Init(GLuint program)
 void Sphere::Update()
 {
 	// Rotation, Forces and other physics updates
-	//Matrix4::UpdateRotationMatrix(rotMatrix, 'z', 1.f);
+	Matrix4::UpdateRotationMatrix(rotMatrix, 'z', 1.f);
 	//Matrix4::UpdateRotationMatrix(rotMatrix, 'y', 1.5f);
 	//Matrix4::UpdateRotationMatrix(rotMatrix, 'x', -0.25f);
 
