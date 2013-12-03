@@ -123,7 +123,7 @@ void Shape::Update()
 	Bounding();
 
 	// Move object correctly
-	Matrix4::SetPositionMatrix(transMatrix, pos.x, pos.y, pos.z);
+	//Matrix4::SetPositionMatrix(transMatrix, pos.x, pos.y, pos.z);
 }
 
 // Compute the bounding box for this shape

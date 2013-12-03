@@ -238,6 +238,7 @@ void cameraInputCheck() {
 		cam.Translate(0.0f, 0.0f, 2.0f);
 		cam_moved = true;
 	}
+
 	// update view matrix
 	if (cam_moved) {
 		GLuint viewMat_loc = glGetUniformLocation(program, "view");

@@ -71,10 +71,10 @@ void AABB::InitOpenGL(GLuint program)
     glVertexAttribPointer( loc, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0) );
 
 	GLuint vRotateLoc = glGetUniformLocation(program, "vRotate");
-	glUniformMatrix4fv(vRotateLoc, 1, GL_TRUE, (GLfloat*)rotMatrix);
+	glUniformMatrix4fv(vRotateLoc, 1, GL_FALSE, (GLfloat*)rotMatrix);
 
 	GLuint vTransLoc = glGetUniformLocation(program, "vTrans");
-	glUniformMatrix4fv(vTransLoc, 1, GL_TRUE, (GLfloat*)transMatrix);
+	glUniformMatrix4fv(vTransLoc, 1, GL_FALSE, (GLfloat*)transMatrix);
 
 	// colors
 	GLuint vfColorLoc = glGetAttribLocation(program, "vfColor");

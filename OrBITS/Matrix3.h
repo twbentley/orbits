@@ -15,9 +15,9 @@ public:
 	// Constructors and Destructor
 	Matrix3(void);
 	Matrix3::Matrix3(const Vector3& a, const Vector3& b, const Vector3& c);
-	Matrix3(GLfloat m00, GLfloat m01, GLfloat m02,
-	  GLfloat m10, GLfloat m11, GLfloat m12,
-	  GLfloat m20, GLfloat m21, GLfloat m22);
+	Matrix3(GLfloat m00, GLfloat m10, GLfloat m20,
+	  GLfloat m01, GLfloat m11, GLfloat m21,
+	  GLfloat m02, GLfloat m12, GLfloat m22);
 	Matrix3(const Matrix3& m);
 	~Matrix3(void);
 
