@@ -11,13 +11,13 @@ readShaderSource(const char* shaderFile)
 
     // one way to deal with warning: http://stackoverflow.com/questions/2575116/fopen-fopen-s-and-writing-to-files:
     FILE* fp;
-    #ifdef WIN32
+    //#ifdef WIN32
         errno_t err;
         if( (err  = fopen_s( &fp, shaderFile, "r" )) !=0 ) {
-    #else
-        if ((fp_config = fopen(shaderFile, "r")) == NULL) {
-    #endif
-        fprintf(stderr, "Cannot open config file %s!\n", shaderFile);
+    //#else
+    //    if ((fp_config = fopen(shaderFile, "r")) == NULL) {
+    //#endif
+    //    fprintf(stderr, "Cannot open config file %s!\n", shaderFile);
     }
 
 

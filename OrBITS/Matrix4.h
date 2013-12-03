@@ -60,7 +60,7 @@ public:
 
 	// Non-Class Matrix4 Methods
 	Matrix4 matrixCompMult(const Matrix4& A, const Matrix4& B);
-	Matrix4 transpose();
+	static Matrix4 transpose(const Matrix4&);
 
 	std::string ToString();
 

@@ -15,27 +15,36 @@ Matrix4::Matrix4(void)
 }
 
 // Full Parameterized Constructor
-Matrix4::Matrix4( GLfloat m00, GLfloat m01, GLfloat m02, GLfloat m03,
-	  GLfloat m10, GLfloat m11, GLfloat m12, GLfloat m13,
-	  GLfloat m20, GLfloat m21, GLfloat m22, GLfloat m23,
-	  GLfloat m30, GLfloat m31, GLfloat m32, GLfloat m33 )
+//Matrix4::Matrix4( GLfloat m00, GLfloat m01, GLfloat m02, GLfloat m03,
+//	  GLfloat m10, GLfloat m11, GLfloat m12, GLfloat m13,
+//	  GLfloat m20, GLfloat m21, GLfloat m22, GLfloat m23,
+//	  GLfloat m30, GLfloat m31, GLfloat m32, GLfloat m33 )
+//{
+Matrix4::Matrix4( GLfloat m00, GLfloat m10, GLfloat m20, GLfloat m30,
+	  GLfloat m01, GLfloat m11, GLfloat m21, GLfloat m31,
+	  GLfloat m02, GLfloat m12, GLfloat m22, GLfloat m32,
+	  GLfloat m03, GLfloat m13, GLfloat m23, GLfloat m33 )
 {
-	matrix[0][0] = m00;
-	matrix[0][1] = m01;
-	matrix[0][2] = m02;
-	matrix[0][3] = m03;
-	matrix[1][0] = m10;
-	matrix[1][1] = m11;
-	matrix[1][2] = m12;
-	matrix[1][3] = m13;
-	matrix[2][0] = m20;
-	matrix[2][1] = m21;
-	matrix[2][2] = m22;
-	matrix[2][3] = m23;
-	matrix[3][0] = m30;
-	matrix[3][1] = m31;
-	matrix[3][2] = m32;
-	matrix[3][3] = m33;
+	matrix[0] = Vector4(m00, m01, m02, m03);
+	matrix[1] = Vector4(m10, m11, m12, m13);
+	matrix[2] = Vector4(m20, m21, m22, m23);
+	matrix[3] = Vector4(m30, m31, m32, m33);
+	//matrix[0][0] = m00;
+	//matrix[0][1] = m01;
+	//matrix[0][2] = m02;
+	//matrix[0][3] = m03;
+	//matrix[1][0] = m10;
+	//matrix[1][1] = m11;
+	//matrix[1][2] = m12;
+	//matrix[1][3] = m13;
+	//matrix[2][0] = m20;
+	//matrix[2][1] = m21;
+	//matrix[2][2] = m22;
+	//matrix[2][3] = m23;
+	//matrix[3][0] = m30;
+	//matrix[3][1] = m31;
+	//matrix[3][2] = m32;
+	//matrix[3][3] = m33;
 
 	zAngle = 0.0f;
 }
@@ -264,14 +273,14 @@ Matrix4 matrixCompMult(const Matrix4& A, const Matrix4& B)
 }
 
 // Transpose the given matrix
-Matrix4 Matrix4::transpose()
+Matrix4 Matrix4::transpose(const Matrix4& m)
 {
 	return Matrix4
 	(
-		matrix[0][0], matrix[1][0], matrix[2][0], matrix[3][0],
-		matrix[0][1], matrix[1][1], matrix[2][1], matrix[3][1],
-		matrix[0][2], matrix[1][2], matrix[2][2], matrix[3][2],
-		matrix[0][3], matrix[1][3], matrix[2][3], matrix[3][3]
+		m[0][0], m[1][0], m[2][0],m[3][0],
+		m[0][1], m[1][1], m[2][1],m[3][1],
+		m[0][2], m[1][2], m[2][2],m[3][2],
+		m[0][3], m[1][3], m[2][3],m[3][3]
 	);
 }
 

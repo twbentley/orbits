@@ -11,11 +11,15 @@ Matrix3::Matrix3(void)
 }
 
 // Full Parameterized Constructor
-Matrix3::Matrix3(GLfloat m00, GLfloat m01, GLfloat m02,
-	  GLfloat m10, GLfloat m11, GLfloat m12,
-	  GLfloat m20, GLfloat m21, GLfloat m22)
+Matrix3::Matrix3(GLfloat m00, GLfloat m10, GLfloat m20,
+	  GLfloat m01, GLfloat m11, GLfloat m21,
+	  GLfloat m02, GLfloat m12, GLfloat m22)
 {
-	matrix[0][0] = m00;
+	matrix[0] = Vector3( m00, m01, m02 );
+	matrix[1] = Vector3( m10, m11, m12 );	
+	matrix[2] = Vector3( m20, m21, m22 );
+
+	/*matrix[0][0] = m00;
 	matrix[1][0] = m10;
 	matrix[2][0] = m20;
 	matrix[0][1] = m01;
@@ -23,7 +27,7 @@ Matrix3::Matrix3(GLfloat m00, GLfloat m01, GLfloat m02,
 	matrix[2][1] = m21;
 	matrix[0][2] = m02;
 	matrix[1][2] = m12;
-	matrix[2][2] = m22;
+	matrix[2][2] = m22;*/
 }
 
 // Parameterized Constructor for Vectors

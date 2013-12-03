@@ -24,9 +24,12 @@ void Sphere::Init(GLuint program)
 	base_colors = new Vector4[NUM_VERTS];
 	colors = new Vector4[NUM_POINTS];
 
+	float modifier = 0.0f;
 	for(int i = 0; i < NUM_POINTS; i++)
 	{
-		colors[i] = Vector4(1.0f, 0.0f, 0.0f, 0.0f); // red
+		if(i % (NUM_POINTS / nRings) == 0)
+			modifier = static_cast<float>(i) / static_cast<float>(NUM_POINTS);
+		colors[i] = Vector4(1.0f * modifier, 1.0f * modifier, 1.0f * modifier, 1.0f); // red
 	}
 
 	GenerateVertices();
@@ -41,8 +44,8 @@ void Sphere::Update()
 {
 	// Rotation, Forces and other physics updates
 	Matrix4::UpdateRotationMatrix(rotMatrix, 'z', 1.f);
-	Matrix4::UpdateRotationMatrix(rotMatrix, 'y', .5f);
-	Matrix4::UpdateRotationMatrix(rotMatrix, 'x', .25f);
+	//Matrix4::UpdateRotationMatrix(rotMatrix, 'y', 1.5f);
+	//Matrix4::UpdateRotationMatrix(rotMatrix, 'x', -0.25f);
 
 	// Default update
 	Shape::Update();

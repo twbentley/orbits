@@ -17,12 +17,31 @@ Shape::Shape(GLfloat width, Vector3 vel, Vector3 pos)
 	Matrix4::UpdatePositionMatrix(transMatrix, pos.x, pos.y, pos.z);
 }
 
+// Copy Constructor
 Shape::Shape(const Shape& toCopy)
 {
+	// Make new instances of every member
 }
 
+// Copy assignment overload
 Shape& Shape::operator= (const Shape& toCopy)
 {
+	this->aabb =  toCopy.aabb;
+	this->base_colors = toCopy.base_colors;
+	this->colors = toCopy.colors;
+	this->myBuffer = toCopy.myBuffer;
+	this->myShaderProgram = toCopy.myShaderProgram;
+	this->NUM_POINTS = toCopy.NUM_POINTS;
+	this->NUM_VERTS = toCopy.NUM_VERTS;
+	this->points = toCopy.points;
+	this->pos = toCopy.pos;
+	this->rotMatrix = toCopy.rotMatrix;
+	this->transMatrix = toCopy.transMatrix;
+	this->vao = toCopy.vao;
+	this->vel = toCopy.vel;
+	this->vertices = toCopy.vertices;
+	this->width = toCopy.width;
+
 	return *this;
 }
 
@@ -91,7 +110,7 @@ void Shape::Render()
 	glBindVertexArray(vao);
 
 	// Draw points
-	glDrawArrays(GL_LINE_STRIP, 0, NUM_POINTS);
+	glDrawArrays(GL_TRIANGLES, 0, NUM_POINTS);
 
 	// Draw bounding box
 	aabb.Render();
@@ -120,7 +139,7 @@ void Shape::Update()
 
 	// Bound and check collisions
 	ComputeAABB();
-	Bounding();
+	//Bounding();
 
 	// Move object correctly
 	Matrix4::SetPositionMatrix(transMatrix, pos.x, pos.y, pos.z);
