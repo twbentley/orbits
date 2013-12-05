@@ -6,8 +6,9 @@ PeasyCam cam;
 //List of planets
 ArrayList<Planet> bodies;
 
-float G = .1; // gravitational constant
+float G = .1f; // gravitational constant
 Planet p1;
+Planet earth;
 Planet theSun;
 String SUN = "SUN";
 String PLANET = "PLANET";
@@ -19,16 +20,17 @@ PVector worldSize;
 // LOL bad commenting srry will fix l8r lol, sorry, sorrynotsorry
 void setup()
 {
-  size(1000,1000, P3D); // Right-handed coords
+  size(1000,1000,P3D); // Right-handed coords
   frameRate(60);
   worldSize = new PVector(4500,4500,4500);
   bodies = new ArrayList<Planet>();
   
-  //twoOrbitInit();
   //ranParticleInit();
-  properOrbitInit();
+  //asteroidBelt();
+  //properOrbitInit();
+  ellipseTest();
   
-  cam = new PeasyCam(this, 4500);
+  cam = new PeasyCam(this,4500);
   cam.setMinimumDistance(50);
   cam.setMaximumDistance(4500);
 }
@@ -37,23 +39,46 @@ void  draw()
 {
   background(255*.75f); // grey
   
-  hint(ENABLE_DEPTH_TEST);
-  hint(ENABLE_DEPTH_SORT);
   lights();
+  pushMatrix();
+  translate(-earth.pos.x,-earth.pos.y,-earth.pos.z);
   for(int i = 0; i < bodies.size(); i++)
   {
     Planet curr = bodies.get(i);
     curr.update();
     curr.display();
   }
-  drawMarkers();
+  //drawMarkers();
+  popMatrix();
 }
 
-void properOrbitInit()
+void asteroidBelt()
 {
   p1 = new Planet(100, new PVector(0, 0, 0), new PVector(0,0,0), SUN);
   bodies.add(p1);
   theSun = p1;
+  for(int i = 0; i < 100; i++)
+  {
+    p1 = new Planet(100, new PVector(0, 0, 0), new PVector(0,0,0), ASTEROID);
+    bodies.add(p1);
+    p1.setOrbit(theSun, (float)(1600 + random(-250,250)), new PVector(0,0,1), 0, "");
+  }
+}
+
+void ellipseTest()
+{
+  theSun = new Planet(100, new PVector(0, 0, 0), new PVector(0,0,0), SUN);
+  bodies.add(theSun);
+  
+  earth = new Planet(50, new PVector(0, 0, 0), new PVector(0,0,0), ASTEROID);
+  bodies.add(earth);
+  earth.setOrbit(theSun, 500, new PVector(1,0,0), 0, "");
+}
+
+void properOrbitInit()
+{
+  theSun = new Planet(100, new PVector(0, 0, 0), new PVector(0,0,0), SUN);
+  bodies.add(theSun);
   
   /*
   p1 = new Planet(20, new PVector(0, 0, 0), new PVector(0,0,0), PLANET);
@@ -64,23 +89,17 @@ void properOrbitInit()
   bodies.add(p1);
   p1.setOrbitV2(theSun, 300, new PVector(10,-5,8), 0);
   */
+  earth = new Planet(50, new PVector(0, 0, 0), new PVector(0,0,0), PLANET);
+  bodies.add(earth);
+  earth.setOrbit(theSun, 2000, new PVector(0,1,1), 0, "");
   
-  Planet p2 = new Planet(20, new PVector(0, 0, 0), new PVector(0,0,0), PLANET);
-  bodies.add(p2);
-  p2.setOrbitV2(theSun, 2000, new PVector(10,-5,8), 0);
+  p1 = new Planet(25, new PVector(0, 0, 0), new PVector(0,0,0), ASTEROID);
+  bodies.add(p1);
+  p1.setOrbit(earth, 200, new PVector(0,1,0), 0, "");
   
   p1 = new Planet(5, new PVector(0, 0, 0), new PVector(0,0,0), ASTEROID);
   bodies.add(p1);
-  p1.setOrbitV2(p2, 100, new PVector(10,-5,8), 0);
-}
-void twoOrbitInit()
-{
-  p1 = new Planet(20, new PVector(worldSize.z/4f, 0, 0), new PVector(0,5,0), PLANET);
-  bodies.add(p1);
-  p1 = new Planet(20, new PVector(-worldSize.z/4f, 0, 0), new PVector(0,-5,0), PLANET);
-  bodies.add(p1);
-  p1 = new Planet(90, new PVector(0,0,0), new PVector(0,0,0), SUN);
-  bodies.add(p1);
+  p1.setOrbit(earth, 75, new PVector(-1,1,0), 0, "");
 }
 void ranParticleInit()
 {
