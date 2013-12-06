@@ -1,6 +1,12 @@
 #include "Cube.h"
 #include "Sphere.h"
 #include "Camera.h"
+#include <Awesomium/WebCore.h>
+#include <Awesomium/BitmapSurface.h>
+#include <Awesomium/STLHelpers.h>
+#include "Button.h"
+
+using namespace Awesomium;
 
 // Define for leak detection
 #define _CRTDBG_MAP_ALLOC
@@ -12,17 +18,24 @@
 GLFWwindow* window;
 // Shader program
 GLuint program;
+GLuint button_program;
 // Shapes in world
 Shape** shapes;
+Button* button;
 // Number of objects in world
 int NUM_OBJECTS = 2;
 
 Camera cam;
-double prevSeconds;
+float prevSeconds;
+
+GLuint frameBuffer;
+unsigned char * data;
+GLuint textureID;
 
 // Constants for window size
 const int SCREEN_WIDTH = 512;
 const int SCREEN_HEIGHT = 512;
+#define URL "http://www.google.com"
 
 // Forward initialization
 void Initialize();
@@ -31,9 +44,31 @@ void Display();
 void Keyboard();
 void TryCircle();
 void ResolveCol(Shape& a, Shape&b);
+GLuint loadBMP_custom(const char* imagePath);
 
 int main(int argc, char **argv)
 {
+	#pragma region Awesomium
+	// Create the WebCore singleton with default configuration
+	WebCore* webCore = WebCore::Initialize(WebConfig());
+	// Create a new WebView instance with desired screen width and height
+	WebView* view = webCore->CreateWebView(SCREEN_HEIGHT, SCREEN_HEIGHT);
+	// Load a URL into the WebView instance
+	WebURL url(WSLit(URL));	// WSLit helps declare WebString literals - special strings for Awesomium
+	view->LoadURL(url);
+	// Wait for the WebView to finish loading
+	while(view->IsLoading())
+		webCore->Update();
+	// Sleep and upadte once more to give scripts and plugins(on the webpage) a chance to finish loading
+	Sleep(300);
+	webCore->Update();
+	// Get the WebView's rendering surface. The default Surface is of type 'BitmapSurface', we must cast it before it can be used
+	BitmapSurface* surface = (BitmapSurface*)view->surface();
+	// Check to make sure surface is not NULL (if NULL, WbeView process has crashed)
+	if(surface != 0)
+		surface->SaveToJPEG(WSLit("./result.jpg"));	// Save the surface to a JPEG image in the current working directory
+	#pragma endregion
+	
 	// Set up glfw and display window
 	if(glfwInit() == 0) return 1;
 	window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "orBITs", NULL, NULL);
@@ -61,10 +96,14 @@ int main(int argc, char **argv)
 	}
 	// Delete array
 	delete [] shapes;
-
+		
 	// Close and clean up glfw window
 	glfwDestroyWindow(window);
 	glfwTerminate();
+
+	// Clean up Awesomium
+	view->Destroy();
+	WebCore::Shutdown();
 
 	// Get memory leaks
 	_CrtDumpMemoryLeaks();
@@ -77,16 +116,27 @@ void Initialize()
 	WORLD_SIZE = Vector3(100.f, 100.0f, 100.f);
 
 	// Set up depth in OpenGL
+	glEnable(GL_TEXTURE_2D);
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
 
 	// Set the initial camera position
 	cam.SetInitialPosition(0.0f, 0.0f, 20.0f);
-	//cam.Translate(0.0f, 0.0f, 12.0f);
 	cam.SetViewportSize(SCREEN_WIDTH, SCREEN_HEIGHT);
 
 	// Get current time
 	prevSeconds = glfwGetTime();
+
+	// BUTTON
+	button_program = InitShader("texvshader.glsl", "texfshader.glsl");
+	// Initialize the vertex position attribute from the vertex shader
+    GLuint button_loc = glGetAttribLocation( button_program, "vPosition" );
+    glEnableVertexAttribArray( button_loc );
+    glVertexAttribPointer( button_loc, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0) );
+
+	button = new Button(0.5f, 0.0f);
+	button->Init(button_program);
+	// BUTTON
 
 	// Load shaders and use resulting shader program
 	program = InitShader("vshader.glsl", "fshader.glsl");
@@ -132,6 +182,9 @@ void Display()
 		shapes[i]->Render();
 	}
 
+	//button->Update();
+	//button->Render();
+
 	//// Resolve conflicts between all objects
 	//for(int i = 0; i < NUM_OBJECTS; i++)
 	//{
@@ -146,8 +199,11 @@ void Display()
 
 void cameraInputCheck()
 {
-	double currentSeconds = glfwGetTime();
-	double elapsed_seconds = currentSeconds - prevSeconds;
+	// TODO: switch back to buffer and shader
+	glUseProgram(program);
+
+	float currentSeconds = glfwGetTime();
+	float elapsed_seconds = currentSeconds - prevSeconds;
 	prevSeconds = currentSeconds;
 
 	Vector3 right(1.0f, 0.0f, 0.0f);
@@ -239,4 +295,54 @@ void Keyboard()//unsigned char key, int mouseX, int mouseY)
 		glfwSetWindowShouldClose(window, true);
 
 	cameraInputCheck();
+}
+
+GLuint loadBMP_custom(const char* imagePath)
+{
+	// Data read from the header of the BMP file
+	unsigned char header[54]; // Each BMP file begins by a 54-bytes header
+	unsigned int dataPos;     // Position in the file where the actual data begins
+	unsigned int width, height;
+	unsigned int imageSize;   // = width*height*3
+	// Actual RGB data
+	//unsigned char * data;
+
+	// Open the file
+	FILE * file;
+	errno_t err;
+	if( (err  = fopen_s( &file, imagePath, "rb" )) !=0 ){}
+
+	if (file == NULL)                              
+	{printf("Image could not be opened\n"); return 0;}
+ 
+	if ( fread(header, 1, 54, file)!=54 ) // If not 54 bytes read : problem
+	{
+		printf("Not a correct BMP file\n");
+		return false;
+	}
+
+	if ( header[0]!='B' || header[1]!='M' )
+	{
+		printf("Not a correct BMP file\n");
+		return 0;
+	}
+
+	// Read ints from the byte array
+	dataPos    = *(int*)&(header[0x0A]);
+	imageSize  = *(int*)&(header[0x22]);
+	width      = *(int*)&(header[0x12]);
+	height     = *(int*)&(header[0x16]);
+
+	// Some BMP files are misformatted, guess missing information
+	if (imageSize==0)    imageSize=width*height*3; // 3 : one byte for each Red, Green and Blue component
+	if (dataPos==0)      dataPos=54; // The BMP header is done that way
+
+	// Create a buffer
+	data = new unsigned char [imageSize];
+ 
+	// Read the actual data from the file into the buffer
+	fread(data,1,imageSize,file);
+ 
+	//Everything is in memory now, the file can be closed
+	fclose(file);
 }

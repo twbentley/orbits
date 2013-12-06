@@ -48,6 +48,9 @@
     <ClCompile Include="Camera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Button.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Angel.h">
@@ -92,12 +95,21 @@
     <ClInclude Include="vec.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Button.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="fshader.glsl">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="vshader.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="texfshader.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="texvshader.glsl">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
