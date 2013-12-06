@@ -16,7 +16,6 @@ public:
 		Vector3 point3;
 	};
 
-
 	Vector3* vertices;
 	Vector4* base_colors;
 	Vector3* points;
