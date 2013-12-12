@@ -1,5 +1,6 @@
 #pragma once
 #include "Shape.h"
+#include "vec.h"
 
 #include <GL/FreeImage.h>
 #include <GL/FreeImage.h>
@@ -8,7 +9,7 @@ class Button
 {
 public:
 	Vector3* vertices;
-	Vector3* UVs;
+	vec2* UVs;
 	Vector4* colors;
 	Matrix4 transMatrix;
 	Matrix4 rotMatrix;

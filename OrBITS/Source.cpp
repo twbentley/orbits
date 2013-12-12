@@ -2,12 +2,7 @@
 #include "Sphere.h"
 #include "BezierSurface.h"
 #include "Camera.h"
-//#include <Awesomium/WebCore.h>
-//#include <Awesomium/BitmapSurface.h>
-//#include <Awesomium/STLHelpers.h>
 #include "Button.h"
-
-//using namespace Awesomium;
 
 // Define for leak detection
 #define _CRTDBG_MAP_ALLOC
@@ -50,28 +45,7 @@ void ResolveCol(Shape& a, Shape&b);
 GLuint loadBMP_custom(const char* imagePath);
 
 int main(int argc, char **argv)
-{
-	#pragma region Awesomium
-	//// Create the WebCore singleton with default configuration
-	//WebCore* webCore = WebCore::Initialize(WebConfig());
-	//// Create a new WebView instance with desired screen width and height
-	//WebView* view = webCore->CreateWebView(SCREEN_HEIGHT, SCREEN_HEIGHT);
-	//// Load a URL into the WebView instance
-	//WebURL url(WSLit(URL));	// WSLit helps declare WebString literals - special strings for Awesomium
-	//view->LoadURL(url);
-	//// Wait for the WebView to finish loading
-	//while(view->IsLoading())
-	//	webCore->Update();
-	//// Sleep and upadte once more to give scripts and plugins(on the webpage) a chance to finish loading
-	//Sleep(300);
-	//webCore->Update();
-	//// Get the WebView's rendering surface. The default Surface is of type 'BitmapSurface', we must cast it before it can be used
-	//BitmapSurface* surface = (BitmapSurface*)view->surface();
-	//// Check to make sure surface is not NULL (if NULL, WbeView process has crashed)
-	//if(surface != 0)
-	//	surface->SaveToJPEG(WSLit("./result.jpg"));	// Save the surface to a JPEG image in the current working directory
-	#pragma endregion
-	
+{	
 	// Set up glfw and display window
 	if(glfwInit() == 0) return 1;
 	window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "orBITs", NULL, NULL);
@@ -104,10 +78,6 @@ int main(int argc, char **argv)
 	glfwDestroyWindow(window);
 	glfwTerminate();
 
-	// Clean up Awesomium
-//	view->Destroy();
-//	WebCore::Shutdown();
-
 	// Get memory leaks
 	_CrtDumpMemoryLeaks();
 }
@@ -119,7 +89,7 @@ void Initialize()
 	WORLD_SIZE = Vector3(100.f, 100.0f, 100.f);
 
 	// Set up depth in OpenGL
-	glEnable(GL_TEXTURE_2D);
+	//glEnable(GL_TEXTURE_2D);
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
 
@@ -133,9 +103,9 @@ void Initialize()
 	// BUTTON
 	button_program = InitShader("texvshader.glsl", "texfshader.glsl");
 	// Initialize the vertex position attribute from the vertex shader
-    GLuint button_loc = glGetAttribLocation( button_program, "vPosition" );
+    /*GLuint button_loc = glGetAttribLocation( button_program, "vPosition" );
     glEnableVertexAttribArray( button_loc );
-    glVertexAttribPointer( button_loc, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0) );
+    glVertexAttribPointer( button_loc, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0) );*/
 
 	button = new Button(0.5f, 0.0f);
 	button->Init(button_program);
@@ -205,10 +175,9 @@ void Display()
 		shapes[i]->Render();
 	}
 
+	button->Update();
+	button->Render();
 	bezier->Display();
-
-	/*button->Update();
-	button->Render();*/
 
 	//// Resolve conflicts between all objects
 	//for(int i = 0; i < NUM_OBJECTS; i++)
@@ -224,7 +193,6 @@ void Display()
 
 void cameraInputCheck()
 {
-	// TODO: switch back to buffer and shader
 	glUseProgram(program);
 
 	float currentSeconds = glfwGetTime();
@@ -292,7 +260,8 @@ void cameraInputCheck()
 	}
 
 	// update view matrix
-	if (cam_moved) {
+	if (cam_moved) 
+	{
 		GLuint viewMat_loc = glGetUniformLocation(program, "view");
 		glUniformMatrix4fv(viewMat_loc, 1, GL_FALSE, cam.ViewMatrix());
 	}
@@ -307,7 +276,8 @@ void cameraInputCheck()
 		proj_changed = true;
 	}
 	// Update projection matrix
-	if (proj_changed) {
+	if (proj_changed) 
+	{
 		GLuint projMat_loc = glGetUniformLocation(program, "projection");
 		glUniformMatrix4fv(projMat_loc, 1, GL_FALSE, cam.ProjectionMatrix());
 	}

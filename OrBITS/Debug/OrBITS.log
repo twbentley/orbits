@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ﻿Build started 12/12/2013 5:00:34 PM.
      1>Project "Z:\Documents\Current\DSAII\OrBITS\OrBITS\OrBITS.vcxproj" on node 2 (Build target(s)).
      1>ClCompile:
@@ -36,3 +37,10 @@
 Build succeeded.
 
 Time Elapsed 00:00:08.42
+=======
+﻿Build started 12/12/2013 5:23:49 PM.
+
+Build succeeded.
+
+Time Elapsed 00:00:01.33
+>>>>>>> 3d9cc66f20b3c9234d239d6ea14f150b8f00866c

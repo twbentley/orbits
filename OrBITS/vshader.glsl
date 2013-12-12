@@ -1,8 +1,5 @@
 #version 150
 
-in vec2 vertexUV;
-out vec2 UV;
-
 in vec4 vPosition;
 in vec4 vfColor;
 
@@ -16,9 +13,9 @@ uniform mat4 view;
 void
 main()
 {
+	// Get rotation, translation, camera (view + projection)
 	gl_Position = projection * view * vTrans * vRotate * vPosition;
-	//gl_Position = vPosition;
 	
+	// Pass color
 	fragmentColor = vfColor;
-	UV = vertexUV;
 }

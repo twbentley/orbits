@@ -121,7 +121,7 @@
     </PostBuildEvent>
     <Link>
       <AdditionalDependencies>glew32.lib;opengl32.lib;glfw3.lib;freeglut.lib;FreeImage.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>\\banner.main.ad.rit.edu\students\twb1193\IGMProfile\Desktop\GitHub\orbits\1.7.3.0\build\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <ClCompile />
   </ItemDefinitionGroup>
