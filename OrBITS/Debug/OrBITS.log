@@ -1,10 +1,11 @@
-﻿Build started 12/10/2013 12:21:37 PM.
+﻿Build started 12/12/2013 5:00:34 PM.
      1>Project "Z:\Documents\Current\DSAII\OrBITS\OrBITS\OrBITS.vcxproj" on node 2 (Build target(s)).
      1>ClCompile:
-         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /I\\banner.main.ad.rit.edu\students\twb1193\IGMProfile\Desktop\GitHub\orbits\1.7.3.0\include /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D _MBCS /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc110.pdb" /Gd /TP /analyze- /errorReport:prompt BezierSurface.cpp
-         BezierSurface.cpp
-     1>z:\documents\current\dsaii\orbits\orbits\beziersurface.cpp(123): warning C4244: 'initializing' : conversion from 'int' to 'float', possible loss of data
-     1>z:\documents\current\dsaii\orbits\orbits\beziersurface.cpp(124): warning C4244: 'initializing' : conversion from 'int' to 'float', possible loss of data
+         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /I\\banner.main.ad.rit.edu\students\twb1193\IGMProfile\Desktop\GitHub\orbits\1.7.3.0\include /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D _MBCS /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc110.pdb" /Gd /TP /analyze- /errorReport:prompt Source.cpp
+         Source.cpp
+     1>z:\documents\current\dsaii\orbits\orbits\source.cpp(131): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>z:\documents\current\dsaii\orbits\orbits\source.cpp(230): warning C4244: 'initializing' : conversion from 'double' to 'float', possible loss of data
+     1>z:\documents\current\dsaii\orbits\orbits\source.cpp(373): warning C4715: 'loadBMP_custom' : not all control paths return a value
        Link:
          C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"Z:\Documents\Current\DSAII\OrBITS\Debug\OrBITS.exe" /INCREMENTAL /NOLOGO /LIBPATH:\\banner.main.ad.rit.edu\students\twb1193\IGMProfile\Desktop\GitHub\orbits\1.7.3.0\build\lib glew32.lib opengl32.lib glfw3.lib freeglut.lib FreeImage.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"Z:\Documents\Current\DSAII\OrBITS\Debug\OrBITS.pdb" /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"Z:\Documents\Current\DSAII\OrBITS\Debug\OrBITS.lib" /MACHINE:X86 Debug\AABB.obj
          Debug\BezierSurface.obj
@@ -34,4 +35,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:07.48
+Time Elapsed 00:00:08.42

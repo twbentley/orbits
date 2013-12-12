@@ -201,8 +201,8 @@ void Display()
 	// Update and render all objects
 	for (int i = 0; i <  NUM_OBJECTS; i++)
 	{
-		//shapes[i]->Update();
-		//shapes[i]->Render();
+		shapes[i]->Update();
+		shapes[i]->Render();
 	}
 
 	bezier->Display();
