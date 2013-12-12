@@ -1,5 +1,6 @@
 #include "Cube.h"
 #include "Sphere.h"
+#include "BezierSurface.h"
 #include "Camera.h"
 #include "Button.h"
 
@@ -16,6 +17,7 @@ GLuint program;
 GLuint button_program;
 // Shapes in world
 Shape** shapes;
+BezierSurface* bezier;
 Button* button;
 // Number of objects in world
 int NUM_OBJECTS = 2;
@@ -35,6 +37,7 @@ const int SCREEN_HEIGHT = 512;
 // Forward initialization
 void Initialize();
 void CreateShape();
+BezierSurface* CreateBezierSurf(); // WOOOAH, TOTALLY AWESOME DUDE!
 void Display();
 void Keyboard();
 void TryCircle();
@@ -42,8 +45,7 @@ void ResolveCol(Shape& a, Shape&b);
 GLuint loadBMP_custom(const char* imagePath);
 
 int main(int argc, char **argv)
-{
-	
+{	
 	// Set up glfw and display window
 	if(glfwInit() == 0) return 1;
 	window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "orBITs", NULL, NULL);
@@ -123,14 +125,16 @@ void Initialize()
 	Sphere* sphere = new Sphere( 5.0f, Vector3(0.0f, 0.f, 0.f), Vector3(0.f, 0.f, 0.f));
 	sphere->Init(program);
 
+	bezier = CreateBezierSurf();
+
 	shapes = new Shape*[NUM_OBJECTS];
 	shapes[0] = cube;
 	shapes[1] = sphere;
 
     // Initialize the vertex position attribute from the vertex shader
-    GLuint loc = glGetAttribLocation( program, "vPosition" );
-    glEnableVertexAttribArray( loc );
-    glVertexAttribPointer( loc, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0) );
+    //GLuint loc = glGetAttribLocation( program, "vPosition" );
+    //glEnableVertexAttribArray( loc );
+    //glVertexAttribPointer( loc, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0) );
 
 	// Enable transparency
 	glEnable (GL_BLEND);
@@ -139,6 +143,24 @@ void Initialize()
 	// Set up background color
 	//glClearColor(0.1f, 0.1f, 0.1f, 0.01f);
 	glClearColor(1.0,1.0,1.0,1.0);
+}
+
+BezierSurface* CreateBezierSurf()
+{
+	std::vector<Vector3> control1Points;
+	control1Points.push_back( Vector3( 0.0f, 0.0f, 0.0f) );
+	control1Points.push_back( Vector3( 3.0f, 0.0f, 1.0f) );
+	control1Points.push_back( Vector3( 6.0f, 1.0f, 0.0f) );
+	control1Points.push_back( Vector3( 10.0f, 0.0f, 0.0) );
+
+	std::vector<Vector3> control2Points;
+	control2Points.push_back( Vector3( 0.0f, 0.0f, 0.0f) );
+	control2Points.push_back( Vector3( 1.0f, 3.0f, 0.0f) );
+	control2Points.push_back( Vector3( 0.0f, 6.0f, 1.0f) );
+	control2Points.push_back( Vector3( 0.0f, 10.0f, 0.0) );
+
+	BezierSurface* temp = new BezierSurface(program, control1Points, control2Points);
+	return temp;
 }
 
 // Display objects
@@ -155,6 +177,7 @@ void Display()
 
 	button->Update();
 	button->Render();
+	bezier->Display();
 
 	//// Resolve conflicts between all objects
 	//for(int i = 0; i < NUM_OBJECTS; i++)

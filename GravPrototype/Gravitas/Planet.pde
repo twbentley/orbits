@@ -28,17 +28,17 @@ class Planet
   void calcMass()
   {
     float massScalar;
-    if(type == SUN)    
+    if(type == SUN)           // immovable, large mass ( SUNS, MANNNNNN )
     {
       massScalar = 1;
     }
-    else if(type == PLANET)
+    else if(type == PLANET)   // moving heavy ( realistic, influential celestial bodies in a system )
     {
-      massScalar = 1f;
+      massScalar = .1f;
     }
-    else if(type == ASTEROID)
+    else if(type == ASTEROID) // moving very low mass, so low that dont have noticeable gravitational influence ( good for aesthetics/particles/moons )
     {
-      massScalar = .00000000001f;
+      massScalar = .01f;
     }
     else
     {
@@ -47,7 +47,7 @@ class Planet
     this.mass = (float)(massScalar*((4f/3f)*PI*(radius*radius*radius))/10f); // Volume = (4f/3f)*PI*(radius*radius*radius)
   }
   
-  void setOrbit(Planet myParent, float radius, PVector normal, float rotation, String type) // normal is axis of rotation, should also add pos or neg velocity
+  void setOrbit(Planet myParent, float radius, PVector normal, float rotation, float semiMajLMult) // normal is axis of rotation, should also add pos or neg velocity
   {
     float unknownY = -normal.x/normal.y; // 0 = x1*x2 + y1*unknownY + z1*z2
                                          // 0 = x1 + y1*unknownY
@@ -70,8 +70,12 @@ class Planet
     pos = PVector.add(myParent.pos, tempPos);   // place in world!
     println("tempPos.mag: "+tempPos.mag()+", tempPos: " +tempPos+ ", actPos: " + pos);
     
-    float semiMajL = radius*2f; //elliptical, where (dist from sun(foci) to planet at 0 degrees)*2 = semi-minor axis
-    semiMajL = radius; //circular
+    if(semiMajLMult == 0)
+    {
+      semiMajLMult = .00001;
+    }
+    float semiMajL = radius*semiMajLMult; //elliptical, where (dist from sun(foci) to planet at 0 degrees)*4 = semi-minor axis
+    //semiMajL = radius; //circular
     //semiMajL = radius*99999999; //parabolic
     //semiMajL = radius*-2f; // for hyperbola, except will start at y-int 
     
@@ -116,11 +120,11 @@ class Planet
   void updateTrail()
   {
     currFrame++;
-    if(currFrame % 5 == 0)
+    if(currFrame % 6 == 0)
     {
     pastPts.addLast(new PVector(pos.x, pos.y, pos.z));
     }
-    if (pastPts.size() > 10000)
+    if (pastPts.size() > 1000)
     {
       pastPts.removeFirst();
     }

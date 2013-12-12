@@ -10,6 +10,7 @@ Button::Button(GLfloat width, GLfloat depth)
 	//Matrix4::UpdateRotationMatrix(rotMatrix, 'x', 180);
 	//Matrix4::UpdateRotationMatrix(rotMatrix, 'y', 180);
 	Matrix4::UpdatePositionMatrix(transMatrix, -width, -width, 0.0f);
+	Matrix4::UpdateScaleMatrix(rotMatrix, 0.5f, 0.5f, 1.0f);
 }
 
 
