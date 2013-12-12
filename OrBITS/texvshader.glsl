@@ -1,12 +1,9 @@
 #version 150 
 
-in vec2 vertexUV;
-out vec2 UV;
-
 in  vec4 vPosition;
-in vec4 vfColor;
+in vec2 vertexUV;
 
-out vec4 fragmentColor;
+out vec2 UV;
 
 uniform mat4 vRotate;
 uniform mat4 vTrans;
@@ -16,8 +13,7 @@ uniform mat4 view;
 void main() 
 {
 	//gl_Position = projection * view * vTrans * vRotate * vPosition;
-	gl_Position = vPosition;
+	gl_Position = vTrans * vRotate * vPosition;
 
-	fragmentColor = vfColor;
 	UV = vertexUV;
 } 
