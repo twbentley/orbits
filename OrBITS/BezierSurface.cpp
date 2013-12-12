@@ -12,14 +12,20 @@ const Vector4 BezierSurface::_controlLinesColor2  = Vector4( 0.4f, 1.0f, 1.0f, 1
 #pragma endregion
 
 #pragma region Constructor
-BezierSurface::BezierSurface( std::vector<Vector4> points1, std::vector<Vector4> points2, unsigned __int8 numberOfTimeStamps, Vector4 bottomLeftColor, Vector4 bottomRightColor, Vector4 topLeftColor, Vector4 topRightColor )
+BezierSurface::BezierSurface(GLuint myShaderProgram, std::vector<Vector3> points1, std::vector<Vector3> points2, unsigned __int8 numberOfTimeStamps, Vector4 bottomLeftColor, Vector4 bottomRightColor, Vector4 topLeftColor, Vector4 topRightColor )
 	: _controlPoints1( points1 ), _controlPoints2( points2 ), _numberOfTimeStamps( numberOfTimeStamps ), _bottomLeftColor( bottomLeftColor ), _bottomRightColor( bottomRightColor ), _topLeftColor( topLeftColor ), _topRightColor( topRightColor )
 {
-	_model = Matrix4();	// Identity Matrix
+	this->myShaderProgram = myShaderProgram;
+
+	// Create a vertex array object
+    glGenVertexArrays( 1, &vao );
+    glBindVertexArray( vao );
+
+	Matrix4::UpdatePositionMatrix(transMatrix, 0, 0, 0);
 
 	// Preallocate size of vectors
-	_pointsOnTheSurface = vector<vector<Vector4>>( _numberOfTimeStamps + 1 );
-	_vertices	= vector<Vector4>( _numberOfTimeStamps * _numberOfTimeStamps * 12 );	// 12 triangles made (6) each side
+	_pointsOnTheSurface = vector<vector<Vector3>>( _numberOfTimeStamps + 1 );
+	_vertices	= vector<Vector3>( _numberOfTimeStamps * _numberOfTimeStamps * 12 );	// 12 triangles made (6) each side
 	_colors		= vector<Vector4>( _numberOfTimeStamps * _numberOfTimeStamps * 12 );	// 12 triangles made
 
 #pragma region Fill Colors for Control Points and Lines
@@ -39,33 +45,52 @@ BezierSurface::BezierSurface( std::vector<Vector4> points1, std::vector<Vector4>
 #pragma region Setup Points of the Surface
 	glGenBuffers( 1, &_curveVertexbuffer );
 	glBindBuffer( GL_ARRAY_BUFFER, _curveVertexbuffer );
-	glBufferData( GL_ARRAY_BUFFER, _vertices.size() * sizeof(Vector4) + _colors.size() * sizeof(Vector4),
+	glBufferData( GL_ARRAY_BUFFER, _vertices.size() * sizeof(Vector3) + _colors.size() * sizeof(Vector4),
 		NULL, GL_STATIC_DRAW );
-	glBufferSubData( GL_ARRAY_BUFFER, 0, _vertices.size() * sizeof(Vector4), &_vertices[0] );
-	glBufferSubData( GL_ARRAY_BUFFER, _vertices.size() * sizeof(Vector4), _colors.size() * sizeof(Vector4), &_colors[0] );
+	glBufferSubData( GL_ARRAY_BUFFER, 0, _vertices.size() * sizeof(Vector3), &_vertices[0] );
+	glBufferSubData( GL_ARRAY_BUFFER, _vertices.size() * sizeof(Vector3), _colors.size() * sizeof(Vector4), &_colors[0] );
 #pragma endregion
 
 #pragma region Setup Control Points and Lines of  (1)
 	glGenBuffers( 1, &_controlVertexbuffer1 );
 	glBindBuffer( GL_ARRAY_BUFFER, _controlVertexbuffer1 );
-	glBufferData( GL_ARRAY_BUFFER, ( _controlPoints1.size() + _colorControlPoints1.size() + _colorControlLines1.size() ) * sizeof(Vector4),
+	glBufferData( GL_ARRAY_BUFFER, _controlPoints1.size()*sizeof(Vector3) + (_colorControlPoints1.size() + _colorControlLines1.size()) * sizeof(Vector4),
 		NULL, GL_STATIC_DRAW );
-	glBufferSubData( GL_ARRAY_BUFFER, 0, _controlPoints1.size() * sizeof(Vector4), &_controlPoints1[0] );
-	glBufferSubData( GL_ARRAY_BUFFER, _controlPoints1.size() * sizeof(Vector4), _colorControlPoints1.size() * sizeof(Vector4), &_colorControlPoints1[0] );
-	glBufferSubData( GL_ARRAY_BUFFER, ( _controlPoints1.size() + _colorControlPoints1.size() ) * sizeof(Vector4), _colorControlLines1.size() * sizeof(Vector4), &_colorControlLines1[0] );
+	glBufferSubData( GL_ARRAY_BUFFER, 0, _controlPoints1.size() * sizeof(Vector3), &_controlPoints1[0] );
+	glBufferSubData( GL_ARRAY_BUFFER, _controlPoints1.size() * sizeof(Vector3), _colorControlPoints1.size() * sizeof(Vector4), &_colorControlPoints1[0] );
+	glBufferSubData( GL_ARRAY_BUFFER, _controlPoints1.size() * sizeof(Vector3) + _colorControlPoints1.size() * sizeof(Vector4), _colorControlLines1.size() * sizeof(Vector4), &_colorControlLines1[0] );
 #pragma endregion
 
 #pragma region Setup Control Points and Lines of  (2)
 	glGenBuffers( 1, &_controlVertexbuffer2 );
 	glBindBuffer( GL_ARRAY_BUFFER, _controlVertexbuffer2 );
-	glBufferData( GL_ARRAY_BUFFER, ( _controlPoints2.size() + _colorControlPoints2.size() + _colorControlLines2.size() ) * sizeof(Vector4),
+	glBufferData( GL_ARRAY_BUFFER, _controlPoints2.size()*sizeof(Vector3) + (_colorControlPoints2.size() + _colorControlLines2.size()) * sizeof(Vector4),
 		NULL, GL_STATIC_DRAW );
-	glBufferSubData( GL_ARRAY_BUFFER, 0, _controlPoints2.size() * sizeof(Vector4), &_controlPoints2[0] );
-	glBufferSubData( GL_ARRAY_BUFFER, _controlPoints2.size() * sizeof(Vector4), _colorControlPoints2.size() * sizeof(Vector4), &_colorControlPoints2[0] );
-	glBufferSubData( GL_ARRAY_BUFFER, ( _controlPoints2.size() + _colorControlPoints2.size() ) * sizeof(Vector4), _colorControlLines2.size() * sizeof(Vector4), &_colorControlLines2[0] );
+	glBufferSubData( GL_ARRAY_BUFFER, 0, _controlPoints2.size() * sizeof(Vector3), &_controlPoints2[0] );
+	glBufferSubData( GL_ARRAY_BUFFER, _controlPoints2.size() * sizeof(Vector3), _colorControlPoints2.size() * sizeof(Vector4), &_colorControlPoints2[0] );
+	glBufferSubData( GL_ARRAY_BUFFER, _controlPoints2.size() * sizeof(Vector3) + _colorControlPoints2.size() * sizeof(Vector4), _colorControlLines2.size() * sizeof(Vector4), &_colorControlLines2[0] );
 #pragma endregion
 
 	createPoints();
+
+	// set up vertex arrays
+	GLuint loc = glGetAttribLocation( myShaderProgram, "vPosition" );
+	glEnableVertexAttribArray( loc );
+	glVertexAttribPointer( loc, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0) );
+
+	// Set value of rotation for this object
+	GLuint vRotateLoc = glGetUniformLocation(myShaderProgram, "vRotate");
+	glUniformMatrix4fv(vRotateLoc, 1, GL_TRUE, (GLfloat*)rotMatrix);
+
+	// Set value of translation for this object
+	GLuint vTransLoc = glGetUniformLocation(myShaderProgram, "vTrans");
+	glUniformMatrix4fv(vTransLoc, 1, GL_TRUE, (GLfloat*)transMatrix);
+
+	// Enable value of color for this object
+	GLuint vfColorLoc = glGetAttribLocation( myShaderProgram, "vfColor" ); 
+	glEnableVertexAttribArray( vfColorLoc );
+	glVertexAttribPointer( vfColorLoc, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(_vertices.size() * sizeof(Vector3)) );
+	glUniform4f(vfColorLoc, 0.0f, 1.0f, 0.0f, 1.0f);
 }
 #pragma endregion
 
@@ -82,7 +107,6 @@ BezierSurface::~BezierSurface(void)
 #pragma region Create Points
 void BezierSurface::createPoints()
 {
-
 	unsigned __int8 CONTROL_POINT1_COUNT = _controlPoints1.size();
 	unsigned __int8 CONTROL_POINT2_COUNT = _controlPoints2.size();
 	unsigned __int8 N1 = CONTROL_POINT1_COUNT - 1;
@@ -99,15 +123,15 @@ void BezierSurface::createPoints()
 	float n1Factorial = factorial(N1);
 	float n2Factorial = factorial(N2);
 
-	Vector4 tempVector;
-	Vector4 control1CalcedVector;
-	std::vector<Vector4> tempVectorList( _numberOfTimeStamps + 1 );
+	Vector3 tempVector;
+	Vector3 control1CalcedVector;
+	std::vector<Vector3> tempVectorList( _numberOfTimeStamps + 1 );
 
 	// Fill in the columns of the surface with each row
 	for( i = 0; i < _numberOfTimeStamps + 1; ++i )
 	{
-		tempVector				= Vector4( 0.0f, 0.0f, 0.0f, 0.0f );
-		control1CalcedVector	= Vector4( 0.0f, 0.0f, 0.0f, 0.0f );
+		tempVector				= Vector3( 0.0f, 0.0f, 0.0f);
+		control1CalcedVector	= Vector3( 0.0f, 0.0f, 0.0f);
 
 
 		// Calculate Control1 Points ( Horizontal row of the Bezier Surface )
@@ -128,7 +152,6 @@ void BezierSurface::createPoints()
 			}
 
 			// Fill in the row of the surface
-			tempVector.w = 1.0f;
 			tempVectorList[ii] = tempVector;
 			currentTimeStep2 += timeStepIncrement;
 		}
@@ -179,13 +202,13 @@ void BezierSurface::fillBuffer()
 
 	// Update for when we 'Move'(recalculate) the vertices
 	glBindBuffer( GL_ARRAY_BUFFER, _curveVertexbuffer );
-	glBufferSubData( GL_ARRAY_BUFFER, 0, _vertices.size() * sizeof(Vector4), &_vertices[0] );
+	glBufferSubData( GL_ARRAY_BUFFER, 0, _vertices.size() * sizeof(Vector3), &_vertices[0] );
 	
 	glBindBuffer( GL_ARRAY_BUFFER, _controlVertexbuffer1 );
-	glBufferSubData( GL_ARRAY_BUFFER, 0, _controlPoints1.size() * sizeof(Vector4), &_controlPoints1[0] );
+	glBufferSubData( GL_ARRAY_BUFFER, 0, _controlPoints1.size() * sizeof(Vector3), &_controlPoints1[0] );
 
 	glBindBuffer( GL_ARRAY_BUFFER, _controlVertexbuffer2 );
-	glBufferSubData( GL_ARRAY_BUFFER, 0, _controlPoints2.size() * sizeof(Vector4), &_controlPoints2[0] );
+	glBufferSubData( GL_ARRAY_BUFFER, 0, _controlPoints2.size() * sizeof(Vector3), &_controlPoints2[0] );
 }
 #pragma endregion
 
@@ -263,31 +286,33 @@ Vector4 BezierSurface::getColor( int widthIndex, int heightIndex, int widthSize,
 
 // Display the Curve
 #pragma region Display
-void BezierSurface::display(GLuint program) 
+void BezierSurface::Display() 
 {
 	#pragma region Render Bezier Surface
+	glUseProgram(myShaderProgram);
 	glBindBuffer( GL_ARRAY_BUFFER, _curveVertexbuffer );
+	glBindVertexArray(vao);
 
-	// set up vertex arrays
-	GLuint vPosition = glGetAttribLocation( program, "vPosition" );
-	glEnableVertexAttribArray( vPosition );
-	glVertexAttribPointer( vPosition, 4, GL_FLOAT, GL_FALSE, 0,
-		BUFFER_OFFSET(0) );
+	//Matrix4::UpdateRotationMatrix(rotMatrix, 'z', 1.0f);
 
-	GLuint vColor = glGetAttribLocation( program, "vColor" ); 
-	glEnableVertexAttribArray( vColor );
+	GLuint loc = glGetAttribLocation(myShaderProgram, "vPosition");
+	glEnableVertexAttribArray( loc );
+	glVertexAttribPointer( loc, 3, GL_FLOAT, GL_FALSE, 0 ,BUFFER_OFFSET(0) );
 
-	glVertexAttribPointer( vColor, 4, GL_FLOAT, GL_FALSE, 0,
-		BUFFER_OFFSET(_vertices.size() * sizeof(Vector4)) );
+	GLuint loc2 = glGetAttribLocation(myShaderProgram, "vfColor");
+	glEnableVertexAttribArray( loc2 );
+	glVertexAttribPointer( loc2, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET( _vertices.size() * sizeof(Vector3)) );
 
+	// Set value of rotation for this object
+	GLuint vRotateLoc = glGetUniformLocation(myShaderProgram, "vRotate");
+	glUniformMatrix4fv(vRotateLoc, 1, GL_TRUE, (GLfloat*)rotMatrix);
 
-	GLuint model = glGetUniformLocation( program, "model" );
-	glUniformMatrix4fv( model, 1, GL_TRUE, &_model[0][0] );
+	// Set value of translation for this object
+	GLuint vTransLoc = glGetUniformLocation(myShaderProgram, "vTrans");
+	glUniformMatrix4fv(vTransLoc, 1, GL_TRUE, (GLfloat*)transMatrix);
 
 	glDrawArrays( GL_TRIANGLES, 0, _vertices.size() );
 
-	glDisableVertexAttribArray( vPosition );
-	glDisableVertexAttribArray( vColor );	
 #pragma endregion
 	#pragma region WE DONT HAVE A DEBUG MODE --- IRRELEVANT FOR NOW
 	/*if( debugVisible )

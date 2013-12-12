@@ -1,12 +1,13 @@
 #include "Cube.h"
 #include "Sphere.h"
+#include "BezierSurface.h"
 #include "Camera.h"
-#include <Awesomium/WebCore.h>
-#include <Awesomium/BitmapSurface.h>
-#include <Awesomium/STLHelpers.h>
+//#include <Awesomium/WebCore.h>
+//#include <Awesomium/BitmapSurface.h>
+//#include <Awesomium/STLHelpers.h>
 #include "Button.h"
 
-using namespace Awesomium;
+//using namespace Awesomium;
 
 // Define for leak detection
 #define _CRTDBG_MAP_ALLOC
@@ -21,6 +22,7 @@ GLuint program;
 GLuint button_program;
 // Shapes in world
 Shape** shapes;
+BezierSurface* bezier;
 Button* button;
 // Number of objects in world
 int NUM_OBJECTS = 2;
@@ -40,6 +42,7 @@ const int SCREEN_HEIGHT = 512;
 // Forward initialization
 void Initialize();
 void CreateShape();
+BezierSurface* CreateBezierSurf(); // WOOOAH, TOTALLY AWESOME DUDE!
 void Display();
 void Keyboard();
 void TryCircle();
@@ -49,24 +52,24 @@ GLuint loadBMP_custom(const char* imagePath);
 int main(int argc, char **argv)
 {
 	#pragma region Awesomium
-	// Create the WebCore singleton with default configuration
-	WebCore* webCore = WebCore::Initialize(WebConfig());
-	// Create a new WebView instance with desired screen width and height
-	WebView* view = webCore->CreateWebView(SCREEN_HEIGHT, SCREEN_HEIGHT);
-	// Load a URL into the WebView instance
-	WebURL url(WSLit(URL));	// WSLit helps declare WebString literals - special strings for Awesomium
-	view->LoadURL(url);
-	// Wait for the WebView to finish loading
-	while(view->IsLoading())
-		webCore->Update();
-	// Sleep and upadte once more to give scripts and plugins(on the webpage) a chance to finish loading
-	Sleep(300);
-	webCore->Update();
-	// Get the WebView's rendering surface. The default Surface is of type 'BitmapSurface', we must cast it before it can be used
-	BitmapSurface* surface = (BitmapSurface*)view->surface();
-	// Check to make sure surface is not NULL (if NULL, WbeView process has crashed)
-	if(surface != 0)
-		surface->SaveToJPEG(WSLit("./result.jpg"));	// Save the surface to a JPEG image in the current working directory
+	//// Create the WebCore singleton with default configuration
+	//WebCore* webCore = WebCore::Initialize(WebConfig());
+	//// Create a new WebView instance with desired screen width and height
+	//WebView* view = webCore->CreateWebView(SCREEN_HEIGHT, SCREEN_HEIGHT);
+	//// Load a URL into the WebView instance
+	//WebURL url(WSLit(URL));	// WSLit helps declare WebString literals - special strings for Awesomium
+	//view->LoadURL(url);
+	//// Wait for the WebView to finish loading
+	//while(view->IsLoading())
+	//	webCore->Update();
+	//// Sleep and upadte once more to give scripts and plugins(on the webpage) a chance to finish loading
+	//Sleep(300);
+	//webCore->Update();
+	//// Get the WebView's rendering surface. The default Surface is of type 'BitmapSurface', we must cast it before it can be used
+	//BitmapSurface* surface = (BitmapSurface*)view->surface();
+	//// Check to make sure surface is not NULL (if NULL, WbeView process has crashed)
+	//if(surface != 0)
+	//	surface->SaveToJPEG(WSLit("./result.jpg"));	// Save the surface to a JPEG image in the current working directory
 	#pragma endregion
 	
 	// Set up glfw and display window
@@ -102,8 +105,8 @@ int main(int argc, char **argv)
 	glfwTerminate();
 
 	// Clean up Awesomium
-	view->Destroy();
-	WebCore::Shutdown();
+//	view->Destroy();
+//	WebCore::Shutdown();
 
 	// Get memory leaks
 	_CrtDumpMemoryLeaks();
@@ -152,14 +155,16 @@ void Initialize()
 	Sphere* sphere = new Sphere( 5.0f, Vector3(0.0f, 0.f, 0.f), Vector3(0.f, 0.f, 0.f));
 	sphere->Init(program);
 
+	bezier = CreateBezierSurf();
+
 	shapes = new Shape*[NUM_OBJECTS];
 	shapes[0] = cube;
 	shapes[1] = sphere;
 
     // Initialize the vertex position attribute from the vertex shader
-    GLuint loc = glGetAttribLocation( program, "vPosition" );
-    glEnableVertexAttribArray( loc );
-    glVertexAttribPointer( loc, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0) );
+    //GLuint loc = glGetAttribLocation( program, "vPosition" );
+    //glEnableVertexAttribArray( loc );
+    //glVertexAttribPointer( loc, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0) );
 
 	// Enable transparency
 	glEnable (GL_BLEND);
@@ -170,6 +175,24 @@ void Initialize()
 	glClearColor(1.0,1.0,1.0,1.0);
 }
 
+BezierSurface* CreateBezierSurf()
+{
+	std::vector<Vector3> control1Points;
+	control1Points.push_back( Vector3( 0.0f, 0.0f, 0.0f) );
+	control1Points.push_back( Vector3( 3.0f, 0.0f, 1.0f) );
+	control1Points.push_back( Vector3( 6.0f, 1.0f, 0.0f) );
+	control1Points.push_back( Vector3( 10.0f, 0.0f, 0.0) );
+
+	std::vector<Vector3> control2Points;
+	control2Points.push_back( Vector3( 0.0f, 0.0f, 0.0f) );
+	control2Points.push_back( Vector3( 1.0f, 3.0f, 0.0f) );
+	control2Points.push_back( Vector3( 0.0f, 6.0f, 1.0f) );
+	control2Points.push_back( Vector3( 0.0f, 10.0f, 0.0) );
+
+	BezierSurface* temp = new BezierSurface(program, control1Points, control2Points);
+	return temp;
+}
+
 // Display objects
 void Display()
 {
@@ -178,12 +201,14 @@ void Display()
 	// Update and render all objects
 	for (int i = 0; i <  NUM_OBJECTS; i++)
 	{
-		shapes[i]->Update();
-		shapes[i]->Render();
+		//shapes[i]->Update();
+		//shapes[i]->Render();
 	}
 
-	//button->Update();
-	//button->Render();
+	bezier->Display();
+
+	/*button->Update();
+	button->Render();*/
 
 	//// Resolve conflicts between all objects
 	//for(int i = 0; i < NUM_OBJECTS; i++)

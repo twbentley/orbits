@@ -65,6 +65,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AABB.cpp" />
+    <ClCompile Include="BezierSurface.cpp" />
     <ClCompile Include="Button.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Cube.cpp" />
@@ -80,6 +81,7 @@
   <ItemGroup>
     <ClInclude Include="AABB.h" />
     <ClInclude Include="Angel.h" />
+    <ClInclude Include="BezierSurface.h" />
     <ClInclude Include="Button.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="CheckError.h" />
@@ -118,7 +120,7 @@
       <Command>xcopy "$(SolutionDir)GL\x86\bin" "$(SolutionDir)$(Configuration)" /y</Command>
     </PostBuildEvent>
     <Link>
-      <AdditionalDependencies>glew32.lib;opengl32.lib;glfw3.lib;freeglut.lib;Awesomium.lib;FreeImage.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glew32.lib;opengl32.lib;glfw3.lib;freeglut.lib;FreeImage.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>\\banner.main.ad.rit.edu\students\twb1193\IGMProfile\Desktop\GitHub\orbits\1.7.3.0\build\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <ClCompile />

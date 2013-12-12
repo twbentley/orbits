@@ -30,8 +30,18 @@ readShaderSource(const char* shaderFile)
     char* buf = new char[size + 1];
     fread(buf, 1, size, fp);
 
-    buf[size] = '\0';
+	// Cap off the char array with a null-terminator
     fclose(fp);
+	for(int i = size; i >= 0; i--)
+    {
+        if(buf[i] == '}')
+        {
+			buf[i + 1] = '\0';
+			i = -1;
+        }
+    }
+
+	std::cout << buf << std::endl;
 
     return buf;
 }
@@ -73,6 +83,7 @@ InitShader(const char* vShaderFile, const char* fShaderFile)
 	    char* logMsg = new char[logSize];
 	    glGetShaderInfoLog( shader, logSize, NULL, logMsg );
 	    std::cerr << logMsg << std::endl;
+		std::cout << logMsg << std::endl;
 	    delete [] logMsg;
 
 	    exit( EXIT_FAILURE );
