@@ -108,6 +108,12 @@ Vector3& Vector3::operator /= ( const GLfloat s )
 	return *this;
 }
 
+// ToString output
+void Vector3::ToString(std::ostream& o) const
+{
+	o << "Vector3 - X: " << x << " | Y: " << y << " | Z: " << z;
+}
+
 // Vector-Vector dot product
 GLfloat Vector3::dot( const Vector3& u, const Vector3& v )
 {

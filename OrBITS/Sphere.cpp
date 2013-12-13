@@ -155,7 +155,8 @@ void Sphere::SetPoints()
 
 	//for(int j = 0; j < NUM_POINTS; j++)
 	//{
-	//	std::cout << points[j].x << " | " <<  points[j].y << " | " <<  points[j].x << std::endl; 
+	//	//std::cout << points[j].x << " | " <<  points[j].y << " | " <<  points[j].x << std::endl; 
+	//	std::cout << &points[j];// << std::endl;
 	//}
 
 }

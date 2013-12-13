@@ -3,17 +3,21 @@
 #include "BezierSurface.h"
 #include "Camera.h"
 #include "Button.h"
+#include <queue>
 
 // Define for leak detection
 #define _CRTDBG_MAP_ALLOC
 
 // Prevent console window from opening
-#pragma comment(linker, "/subsystem:\"windows\" /entry:\"mainCRTStartup\"")
+//#pragma comment(linker, "/subsystem:\"windows\" /entry:\"mainCRTStartup\"")
+
+enum STATE { MENU, PLAY };
 
 // GLFW window
 GLFWwindow* window;
 // Shader program
 GLuint program;
+// Shader program for buttons/menu
 GLuint button_program;
 // Shapes in world
 Shape** shapes;
@@ -25,21 +29,25 @@ int NUM_OBJECTS = 2;
 Camera cam;
 float prevSeconds;
 
-GLuint frameBuffer;
+GLuint prevMouseState;
+GLuint currMouseState;
+STATE gameState = MENU;
+
 unsigned char * data;
 GLuint textureID;
+double cursorX;
+double cursorY;
 
 // Constants for window size
 const int SCREEN_WIDTH = 512;
 const int SCREEN_HEIGHT = 512;
-#define URL "http://www.google.com"
 
 // Forward initialization
 void Initialize();
 void CreateShape();
 BezierSurface* CreateBezierSurf(); // WOOOAH, TOTALLY AWESOME DUDE!
 void Display();
-void Keyboard();
+void Input();
 void TryCircle();
 void ResolveCol(Shape& a, Shape&b);
 GLuint loadBMP_custom(const char* imagePath);
@@ -61,7 +69,7 @@ int main(int argc, char **argv)
 	// GLFW "game loop"
 	while(!glfwWindowShouldClose(window))
 	{
-		Keyboard();
+		Input();
 		Display();
 		glfwPollEvents();
 	}
@@ -168,25 +176,31 @@ void Display()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	// Update and render all objects
-	for (int i = 0; i <  NUM_OBJECTS; i++)
+	if(gameState == MENU)
 	{
-		shapes[i]->Update();
-		shapes[i]->Render();
+		button->Update();
+		button->Render();
 	}
+	else if(gameState == PLAY)
+	{
+		// Update and render all objects
+		for (int i = 0; i <  NUM_OBJECTS; i++)
+		{
+			shapes[i]->Update();
+			shapes[i]->Render();
+		}
 
-	button->Update();
-	button->Render();
-	bezier->Display();
+		bezier->Display();
 
-	//// Resolve conflicts between all objects
-	//for(int i = 0; i < NUM_OBJECTS; i++)
-	//{
-	//	for(int j = i + 1; j < NUM_OBJECTS; j++)
-	//	{
-	//		ResolveCol(*shapes[i], *shapes[j]);
-	//	}
-	//}
+		//// Resolve conflicts between all objects
+		//for(int i = 0; i < NUM_OBJECTS; i++)
+		//{
+		//	for(int j = i + 1; j < NUM_OBJECTS; j++)
+		//	{
+		//		ResolveCol(*shapes[i], *shapes[j]);
+		//	}
+		//}
+	}
 
 	glfwSwapBuffers(window);
 }
@@ -283,61 +297,41 @@ void cameraInputCheck()
 	}
 }
 
-// Handle keyboard input
-void Keyboard()//unsigned char key, int mouseX, int mouseY)
+// Handle keyboard and mouse input
+void Input()
 {
+	prevMouseState = currMouseState;
+	currMouseState = glfwGetMouseButton(window, 0);
+
 	if(glfwGetKey(window, GLFW_KEY_ESCAPE)) // Quit Game
 		glfwSetWindowShouldClose(window, true);
 
-	cameraInputCheck();
-}
-
-GLuint loadBMP_custom(const char* imagePath)
-{
-	// Data read from the header of the BMP file
-	unsigned char header[54]; // Each BMP file begins by a 54-bytes header
-	unsigned int dataPos;     // Position in the file where the actual data begins
-	unsigned int width, height;
-	unsigned int imageSize;   // = width*height*3
-	// Actual RGB data
-	//unsigned char * data;
-
-	// Open the file
-	FILE * file;
-	errno_t err;
-	if( (err  = fopen_s( &file, imagePath, "rb" )) !=0 ){}
-
-	if (file == NULL)                              
-	{printf("Image could not be opened\n"); return 0;}
- 
-	if ( fread(header, 1, 54, file)!=54 ) // If not 54 bytes read : problem
+	if(gameState == PLAY)
+		cameraInputCheck();
+	else
 	{
-		printf("Not a correct BMP file\n");
-		return false;
+		if(prevMouseState == GLFW_PRESS && currMouseState == GLFW_RELEASE)// && (cursorX < button->vertices[1].x && cursorX > button->vertices[3].x) )
+		{
+			// Get cursor position (0,0 is upper left hand corner)
+			glfwGetCursorPos(window, &cursorX, &cursorY);
+
+			// Convert cursor position to openGL coordinates
+			cursorX = (cursorX / SCREEN_WIDTH) * 2.0 - 1.0;
+			cursorY = (cursorY / SCREEN_HEIGHT);
+			cursorY = (cursorY * 2.0 - 1.0) * -1.0;
+
+			std::cout << cursorX << " | " << cursorY << std::endl;
+
+			// If button is clicked
+			if( (cursorX < button->vertices[1].x && cursorX > button->vertices[3].x) && (cursorY < button->vertices[1].y && cursorY > button->vertices[3].x) )
+			{
+				//std::cout << "HELLOOO!!!!!" << std::endl;
+				//button->Click();
+
+				gameState = PLAY;
+
+				//std::cout << button->vertices[1] << std::endl;
+			}
+		}
 	}
-
-	if ( header[0]!='B' || header[1]!='M' )
-	{
-		printf("Not a correct BMP file\n");
-		return 0;
-	}
-
-	// Read ints from the byte array
-	dataPos    = *(int*)&(header[0x0A]);
-	imageSize  = *(int*)&(header[0x22]);
-	width      = *(int*)&(header[0x12]);
-	height     = *(int*)&(header[0x16]);
-
-	// Some BMP files are misformatted, guess missing information
-	if (imageSize==0)    imageSize=width*height*3; // 3 : one byte for each Red, Green and Blue component
-	if (dataPos==0)      dataPos=54; // The BMP header is done that way
-
-	// Create a buffer
-	data = new unsigned char [imageSize];
- 
-	// Read the actual data from the file into the buffer
-	fread(data,1,imageSize,file);
- 
-	//Everything is in memory now, the file can be closed
-	fclose(file);
 }

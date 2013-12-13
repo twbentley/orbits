@@ -44,6 +44,8 @@ public:
     Vector3& operator *= ( const Vector3& v );
     Vector3& operator /= ( const GLfloat s );
 
+	void ToString(std::ostream&) const;
+
 	// Non-class Vector3 Methods
 	static GLfloat dot( const Vector3& u, const Vector3& v );
 	static GLfloat length( const Vector3& v );

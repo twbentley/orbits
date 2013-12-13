@@ -9,7 +9,7 @@ class Button
 {
 public:
 	Vector3* vertices;
-	vec2* UVs;
+	Vector3* UVs;
 	Vector4* colors;
 	Matrix4 transMatrix;
 	Matrix4 rotMatrix;
@@ -32,5 +32,7 @@ public:
 
 	void Render();
 	void Update();
+
+	void Click(void);
 };
 
