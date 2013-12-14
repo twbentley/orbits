@@ -76,11 +76,10 @@ void Button::InitOpenGL(GLuint program)
 	glUniformMatrix4fv(vTransLoc, 1, GL_TRUE, (GLfloat*)transMatrix);
 
 	// TODO: Load Texture
-	FIBITMAP* bitmap = FreeImage_Load(FreeImage_GetFileType("./blank.png", 0), "./blank.png");
+	FIBITMAP* bitmap = FreeImage_Load(FreeImage_GetFileType("./../Images/button_start.png", 0), "./../Images/button_start.png");
 	FIBITMAP* pImage = FreeImage_ConvertTo32Bits(bitmap);
 	int nWidth = FreeImage_GetWidth(pImage);
 	int nHeight = FreeImage_GetHeight(pImage);
-	std::cout << FreeImage_GetBits(pImage) << std::endl;
 	glGenTextures(1, &textureID);
 	glBindTexture(GL_TEXTURE_2D, textureID);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, nWidth, nHeight, 0, GL_BGRA, GL_UNSIGNED_BYTE, FreeImage_GetBits(pImage));

@@ -49,12 +49,6 @@ void Sphere::Update()
 
 	// Default update
 	Shape::Update();
-
-	// Update rotation and translation for cube
-	GLuint vRotateLoc = glGetUniformLocation(myShaderProgram, "vRotate");
-	glUniformMatrix4fv(vRotateLoc, 1, GL_TRUE, (GLfloat*)rotMatrix);
-	GLuint vTransLoc = glGetUniformLocation(myShaderProgram, "vTrans");
-	glUniformMatrix4fv(vTransLoc, 1, GL_TRUE, (GLfloat*)transMatrix);
 }
 
 void Sphere::GenerateVertices()

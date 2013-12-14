@@ -11,7 +11,7 @@
 // Prevent console window from opening
 //#pragma comment(linker, "/subsystem:\"windows\" /entry:\"mainCRTStartup\"")
 
-enum STATE { MENU, PLAY };
+enum STATE { MENU, PLAY, PAUSE };
 
 // GLFW window
 GLFWwindow* window;
@@ -31,6 +31,8 @@ float prevSeconds;
 
 GLuint prevMouseState;
 GLuint currMouseState;
+GLuint prevPauseState;
+GLuint currPauseState;
 STATE gameState = MENU;
 
 unsigned char * data;
@@ -181,12 +183,14 @@ void Display()
 		button->Update();
 		button->Render();
 	}
-	else if(gameState == PLAY)
+	else if(gameState == PLAY || PAUSE)
 	{
 		// Update and render all objects
 		for (int i = 0; i <  NUM_OBJECTS; i++)
 		{
-			shapes[i]->Update();
+			if(gameState == PLAY)
+				shapes[i]->Update();
+
 			shapes[i]->Render();
 		}
 
@@ -302,12 +306,19 @@ void Input()
 {
 	prevMouseState = currMouseState;
 	currMouseState = glfwGetMouseButton(window, 0);
-
+	prevPauseState = currPauseState;
+	currPauseState = glfwGetKey(window, GLFW_KEY_P);
+	
 	if(glfwGetKey(window, GLFW_KEY_ESCAPE)) // Quit Game
 		glfwSetWindowShouldClose(window, true);
 
-	if(gameState == PLAY)
+	if(gameState == PLAY || gameState == PAUSE)
+	{
 		cameraInputCheck();
+
+		if(currPauseState && !prevPauseState)
+			gameState = (gameState == PLAY) ? PAUSE : PLAY;
+	}
 	else
 	{
 		if(prevMouseState == GLFW_PRESS && currMouseState == GLFW_RELEASE)// && (cursorX < button->vertices[1].x && cursorX > button->vertices[3].x) )
@@ -325,12 +336,7 @@ void Input()
 			// If button is clicked
 			if( (cursorX < button->vertices[1].x && cursorX > button->vertices[3].x) && (cursorY < button->vertices[1].y && cursorY > button->vertices[3].x) )
 			{
-				//std::cout << "HELLOOO!!!!!" << std::endl;
-				//button->Click();
-
 				gameState = PLAY;
-
-				//std::cout << button->vertices[1] << std::endl;
 			}
 		}
 	}
