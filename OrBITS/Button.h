@@ -16,6 +16,7 @@ public:
 
 	GLfloat width;
 	GLfloat depth;
+	std::string imagePath;
 	
 	GLuint myShaderProgram;
 	GLuint myBuffer;
@@ -24,7 +25,7 @@ public:
 
 	int NUM_VERTS;
 
-	Button(GLfloat width, GLfloat depth);
+	Button(GLfloat width, GLfloat depth, char* imageName);
 	~Button(void);
 
 	void Init(GLuint program);

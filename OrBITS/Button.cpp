@@ -1,10 +1,13 @@
 #include "Button.h"
 
-Button::Button(GLfloat width, GLfloat depth)
+Button::Button(GLfloat width, GLfloat depth, char* imageName)
 {
 	NUM_VERTS = 4;
 	this->width = width;
 	this->depth = depth;
+	this->imagePath = "./../Images/";
+ 	this->imagePath += imageName;
+	this->imagePath += ".png";
 }
 
 
@@ -76,7 +79,7 @@ void Button::InitOpenGL(GLuint program)
 	glUniformMatrix4fv(vTransLoc, 1, GL_TRUE, (GLfloat*)transMatrix);
 
 	// TODO: Load Texture
-	FIBITMAP* bitmap = FreeImage_Load(FreeImage_GetFileType("./../Images/button_start.png", 0), "./../Images/button_start.png");
+	FIBITMAP* bitmap = FreeImage_Load(FreeImage_GetFileType("./../Images/button_start.png", 0), imagePath.c_str() );
 	FIBITMAP* pImage = FreeImage_ConvertTo32Bits(bitmap);
 	int nWidth = FreeImage_GetWidth(pImage);
 	int nHeight = FreeImage_GetHeight(pImage);

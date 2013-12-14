@@ -22,7 +22,9 @@ GLuint button_program;
 // Shapes in world
 Shape** shapes;
 BezierSurface* bezier;
-Button* button;
+Button* startButton;
+Button* pauseImage;
+Button* resetButton;
 // Number of objects in world
 int NUM_OBJECTS = 2;
 
@@ -112,13 +114,15 @@ void Initialize()
 
 	// BUTTON
 	button_program = InitShader("texvshader.glsl", "texfshader.glsl");
-	// Initialize the vertex position attribute from the vertex shader
-    /*GLuint button_loc = glGetAttribLocation( button_program, "vPosition" );
-    glEnableVertexAttribArray( button_loc );
-    glVertexAttribPointer( button_loc, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0) );*/
 
-	button = new Button(0.5f, 0.0f);
-	button->Init(button_program);
+	startButton = new Button(0.5f, 0.0f, "button_start");
+	startButton->Init(button_program);
+	pauseImage = new Button(0.5f, 0.0f, "paused_new");
+	Matrix4::SetPositionMatrix(pauseImage->transMatrix, 0.0f, 1.285f, 0.0f);
+	pauseImage->Init(button_program);
+	resetButton = new Button(0.5f, 0.0f, "button_reset");
+	Matrix4::SetPositionMatrix(resetButton->transMatrix, 0.5f, -1.285f, 0.0f);
+	resetButton->Init(button_program);
 	// BUTTON
 
 	// Load shaders and use resulting shader program
@@ -180,10 +184,19 @@ void Display()
 
 	if(gameState == MENU)
 	{
-		button->Update();
-		button->Render();
+		startButton->Update();
+		startButton->Render();
 	}
-	else if(gameState == PLAY || PAUSE)
+	else if(gameState == PAUSE)
+	{
+		pauseImage->Update();
+		pauseImage->Render();
+
+		resetButton->Update();
+		resetButton->Render();
+	}
+
+	if(gameState == PLAY || gameState == PAUSE)
 	{
 		// Update and render all objects
 		for (int i = 0; i <  NUM_OBJECTS; i++)
@@ -319,25 +332,28 @@ void Input()
 		if(currPauseState && !prevPauseState)
 			gameState = (gameState == PLAY) ? PAUSE : PLAY;
 	}
-	else
+
+	if(prevMouseState == GLFW_PRESS && currMouseState == GLFW_RELEASE)
 	{
-		if(prevMouseState == GLFW_PRESS && currMouseState == GLFW_RELEASE)// && (cursorX < button->vertices[1].x && cursorX > button->vertices[3].x) )
+		// Get cursor position (0,0 is upper left hand corner)
+		glfwGetCursorPos(window, &cursorX, &cursorY);
+
+		// Convert cursor position to openGL coordinates
+		cursorX = (cursorX / SCREEN_WIDTH) * 2.0 - 1.0;
+		cursorY = (cursorY / SCREEN_HEIGHT);
+		cursorY = (cursorY * 2.0 - 1.0) * -1.0;
+		
+		// If button
+		if(gameState == MENU && (cursorX < startButton->vertices[1].x && cursorX > startButton->vertices[3].x) && (cursorY < startButton->vertices[1].y && cursorY > startButton->vertices[3].x) )
 		{
-			// Get cursor position (0,0 is upper left hand corner)
-			glfwGetCursorPos(window, &cursorX, &cursorY);
-
-			// Convert cursor position to openGL coordinates
-			cursorX = (cursorX / SCREEN_WIDTH) * 2.0 - 1.0;
-			cursorY = (cursorY / SCREEN_HEIGHT);
-			cursorY = (cursorY * 2.0 - 1.0) * -1.0;
-
-			std::cout << cursorX << " | " << cursorY << std::endl;
-
-			// If button is clicked
-			if( (cursorX < button->vertices[1].x && cursorX > button->vertices[3].x) && (cursorY < button->vertices[1].y && cursorY > button->vertices[3].x) )
-			{
-				gameState = PLAY;
-			}
+			gameState = PLAY;
+		}
+		else if(gameState == PAUSE && (cursorX < resetButton->vertices[1].x + resetButton->transMatrix[0][3] && cursorX > resetButton->vertices[3].x + resetButton->transMatrix[0][3])
+			&& (cursorY < resetButton->vertices[1].y + resetButton->transMatrix[1][3] && cursorY > resetButton->vertices[3].y + + resetButton->transMatrix[1][3]) )
+		{
+			cam.Reset();
+			cam.position = Vector3(0,0,0);
+			Initialize();
 		}
 	}
 }
