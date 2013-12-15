@@ -3,6 +3,10 @@
 #include "BezierSurface.h"
 #include "Camera.h"
 #include "Button.h"
+#include <random>
+
+#include "Globals.h"
+#include "Body.h"
 
 // Define for leak detection
 #define _CRTDBG_MAP_ALLOC
@@ -17,6 +21,11 @@ GLuint program;
 GLuint button_program;
 // Shapes in world
 Shape** shapes;
+
+// Celestial Bodies
+Body** bodies;
+int NUM_BODIES = 10;
+
 BezierSurface* bezier;
 Button* button;
 // Number of objects in world
@@ -29,15 +38,14 @@ GLuint frameBuffer;
 unsigned char * data;
 GLuint textureID;
 
-// Constants for window size
-const int SCREEN_WIDTH = 512;
-const int SCREEN_HEIGHT = 512;
-#define URL "http://www.google.com"
 
 // Forward initialization
 void Initialize();
 void CreateShape();
 BezierSurface* CreateBezierSurf(); // WOOOAH, TOTALLY AWESOME DUDE!
+void GenSystem();	// Inits solar system
+void GenMoonDemo();	// Inits Sun, planet, moon
+void CalcGravity(); // Updates gravitation on planets
 void Display();
 void Keyboard();
 void TryCircle();
@@ -80,6 +88,117 @@ int main(int argc, char **argv)
 
 	// Get memory leaks
 	_CrtDumpMemoryLeaks();
+}
+
+void GenMoonDemo()
+{
+	NUM_BODIES = 2;
+	Body* earth;
+	Body* moon;
+	Body* theSun = new Body(.5f, Vector3(0, 0, 0), Vector3(0,0,0), SUN, program);
+	theSun->Init();
+	bodies = new Body*[NUM_BODIES + 1]; // plus 1 for sun!
+	bodies[0] = theSun;
+
+	earth = new Body(.05f, Vector3(0, 0, 0), Vector3(0,0,0), PLANET, program);
+	float semiMajLMult = 1;
+	float minRadius = 10;
+	earth->SetOrbit(*theSun, 
+				minRadius, 
+				Vector3(((rand() % 200 + 1) - 100)*.001f, ((rand() % 200 + 1) - 100)*.001f, ((rand() % 200 + 1) - 100)*.001f), 
+				0, 
+				semiMajLMult);
+	earth->Init();
+	bodies[1] = earth;
+
+	moon = new Body(.01f, Vector3(0, 0, 0), Vector3(0,0,0), ASTEROID, program);
+	semiMajLMult = 1;
+	minRadius = earth->radius + moon->radius;
+	moon->SetOrbit(*earth, 
+					minRadius*2, 
+					Vector3(((rand() % 200 + 1) - 100)*.001f, ((rand() % 200 + 1) - 100)*.001f, ((rand() % 200 + 1) - 100)*.001f), 
+					0, 
+					semiMajLMult);
+	moon->Init();
+	bodies[2] = moon;
+}
+
+void GenSystem()
+{
+	Body* p1;
+	Body* theSun = new Body(3, Vector3(0, 0, 0), Vector3(0,0,0), SUN, program);
+	theSun->Init();
+	bodies = new Body*[NUM_BODIES + 1]; // plus 1 for sun!
+	bodies[0] = theSun;
+
+	for(int i = 1; i < NUM_BODIES + 1; i++)
+	{
+		float rankScalar = static_cast<float>(i*.1f); // further away a planet is, higher the value
+
+		p1 = new Body((.5f) + ((rand() % 10 + 1) - (5-rankScalar*2.f))*.05f, Vector3(0, 0, 0), Vector3(0,0,0), ASTEROID, program);
+		bodies[i] = p1;
+		float semiMajLMult = (rand() % 4+1);
+		if(semiMajLMult <= 4)
+		{
+			semiMajLMult = 1;
+		}
+		else
+		{
+			semiMajLMult -= 3; // from 0->1
+			semiMajLMult *= 4; // from 0->4
+			semiMajLMult += 1; // from 1->5
+		}
+
+		// the commented line should be correct, the bottom is easier to debug though, so we'll start with that
+		//p1->SetOrbit(*theSun, 700 + (rand() % 800+1 - 400), Vector3(static_cast<float>((rand() % 200 - 100)/100.f),3 + static_cast<float>((rand() % 200 - 100)/100.f),static_cast<float>((rand() % 200 - 100)/100.f)), 0, semiMajLMult);
+		float minRadius;
+		if (i > 1)
+		{
+			minRadius = Vector3::dist(theSun->pos, bodies[i - 1]->pos) + bodies[i-1]->radius + p1->radius;
+		}
+		else
+		{
+			minRadius = theSun->radius + p1->radius;
+		}
+		p1->SetOrbit(*theSun, 
+					minRadius + (rand() % 10 + 1)*(rankScalar), 
+					Vector3(((rand() % 200 + 1) - 100)*.001f, 1 + ((rand() % 200 + 1) - 100)*.001f, ((rand() % 200 + 1) - 100)*.001f), 
+					0, 
+					semiMajLMult);
+		p1->Init();
+	}
+}
+
+void CalcGravity()
+{
+	Vector3 totalG = Vector3(0, 0, 0);
+	Body* curr;
+	Body* currPuller;
+	for (int j = 1; j < NUM_BODIES + 1; j++) // Start at index = 1, because bodies[1] == theSun
+	{
+		curr = bodies[j];
+		for (int i = 0; i < NUM_BODIES + 1; i++) // Calc gravitational pull from all bodies, except self
+		{
+			//GRAVITY!!!
+			currPuller = bodies[i];
+			if (curr != currPuller) // no gravity between self and self
+			{
+				float distBetween = Vector3::dist(curr->pos, currPuller->pos);
+
+				if (distBetween > .01)//this.radius + curr.radius) // else intersecting
+				{
+					float force = G*((curr->mass*currPuller->mass)/(distBetween*distBetween));
+					float gravAccel = force/curr->mass; // I think... ?
+					Vector3 toCurr = currPuller->pos - curr->pos;
+					toCurr = Vector3::normalize(toCurr);
+					toCurr *= gravAccel;
+					totalG += toCurr;
+				}
+			}
+		}
+		curr->accel = totalG;
+		totalG = Vector3(0,0,0);
+	}
 }
 
 // Initialize world
@@ -131,6 +250,9 @@ void Initialize()
 	shapes[0] = cube;
 	shapes[1] = sphere;
 
+	//GenSystem();
+	GenMoonDemo();
+
     // Initialize the vertex position attribute from the vertex shader
     //GLuint loc = glGetAttribLocation( program, "vPosition" );
     //glEnableVertexAttribArray( loc );
@@ -171,13 +293,20 @@ void Display()
 	// Update and render all objects
 	for (int i = 0; i <  NUM_OBJECTS; i++)
 	{
-		shapes[i]->Update();
-		shapes[i]->Render();
+		//shapes[i]->Update();
+		//shapes[i]->Render();
 	}
 
-	button->Update();
-	button->Render();
-	bezier->Display();
+	//button->Update();
+	//button->Render();
+	//bezier->Display();
+
+	CalcGravity();
+	for (int i = 0; i < NUM_BODIES + 1; i++)
+	{
+		bodies[i]->Update();
+		bodies[i]->Render();
+	}
 
 	//// Resolve conflicts between all objects
 	//for(int i = 0; i < NUM_OBJECTS; i++)

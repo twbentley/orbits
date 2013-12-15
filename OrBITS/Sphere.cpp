@@ -5,8 +5,8 @@ Sphere::Sphere(void) : Shape() { }
 // Parameterized constructor
 Sphere::Sphere(GLfloat width, Vector3 vel, Vector3 pos) : Shape(width, vel, pos)
 {
-	nRings = 13;
-	nSegments = 13;
+	nRings = 50;
+	nSegments = 50;
 	radius = width;// / 2;
 
 	//NUM_POINTS = (nRings + 1) * (nSegments + 1);
@@ -39,22 +39,28 @@ void Sphere::Init(GLuint program)
 	InitOpenGL(program);
 }
 
-// Update specific for a cube
+// Update specific for a sphere
 void Sphere::Update()
 {
 	// Rotation, Forces and other physics updates
-	Matrix4::UpdateRotationMatrix(rotMatrix, 'z', 1.f);
+	//Matrix4::UpdateRotationMatrix(rotMatrix, 'z', 1.f);
 	//Matrix4::UpdateRotationMatrix(rotMatrix, 'y', 1.5f);
 	//Matrix4::UpdateRotationMatrix(rotMatrix, 'x', -0.25f);
 
 	// Default update
 	Shape::Update();
 
-	// Update rotation and translation for cube
+	// Update rotation and translation for sphere
 	GLuint vRotateLoc = glGetUniformLocation(myShaderProgram, "vRotate");
 	glUniformMatrix4fv(vRotateLoc, 1, GL_TRUE, (GLfloat*)rotMatrix);
 	GLuint vTransLoc = glGetUniformLocation(myShaderProgram, "vTrans");
 	glUniformMatrix4fv(vTransLoc, 1, GL_TRUE, (GLfloat*)transMatrix);
+}
+
+void Sphere::Render()
+{
+	//Default render
+	Shape::Render();
 }
 
 void Sphere::GenerateVertices()
@@ -107,8 +113,6 @@ void Sphere::GenerateVertices()
 			}
 		}
 	}
-
-	//points = verts;
 
 	//for(int i = 0; i < rings.size(); i++)
 	//{

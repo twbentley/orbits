@@ -3,10 +3,8 @@ class Planet
   PVector pos;
   PVector vel;
   PVector accel;
-  //PVector rotVel;
   float mass;
   float radius;
-  float fallOffDist;
   String type;
 
   LinkedList pastPts;
@@ -17,7 +15,6 @@ class Planet
     this.radius = radius;
     this.type = type;
     calcMass();
-    fallOffDist = 0;
     this.pos = pos;
     this.vel = vel;
     accel = new PVector(0, 0, 0);
@@ -149,7 +146,7 @@ class Planet
     }
   }
 
-  PVector calcGravity()
+  PVector calcGravity() // goes in Source.cpp or System.cpp
   {
     PVector totalG = new PVector(0, 0, 0);
     for (int i = 0; i < bodies.size(); i++)

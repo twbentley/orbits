@@ -26,6 +26,7 @@ public:
 	~Sphere(void);
 
 	void Init(GLuint program);
+	virtual void Render();
 	virtual void Update();
 	void Bounding();
 	void GenerateVertices();

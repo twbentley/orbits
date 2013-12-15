@@ -1,46 +1,5 @@
-<<<<<<< HEAD
-﻿Build started 12/12/2013 5:00:34 PM.
-     1>Project "Z:\Documents\Current\DSAII\OrBITS\OrBITS\OrBITS.vcxproj" on node 2 (Build target(s)).
-     1>ClCompile:
-         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /I\\banner.main.ad.rit.edu\students\twb1193\IGMProfile\Desktop\GitHub\orbits\1.7.3.0\include /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D _MBCS /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc110.pdb" /Gd /TP /analyze- /errorReport:prompt Source.cpp
-         Source.cpp
-     1>z:\documents\current\dsaii\orbits\orbits\source.cpp(131): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
-     1>z:\documents\current\dsaii\orbits\orbits\source.cpp(230): warning C4244: 'initializing' : conversion from 'double' to 'float', possible loss of data
-     1>z:\documents\current\dsaii\orbits\orbits\source.cpp(373): warning C4715: 'loadBMP_custom' : not all control paths return a value
-       Link:
-         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"Z:\Documents\Current\DSAII\OrBITS\Debug\OrBITS.exe" /INCREMENTAL /NOLOGO /LIBPATH:\\banner.main.ad.rit.edu\students\twb1193\IGMProfile\Desktop\GitHub\orbits\1.7.3.0\build\lib glew32.lib opengl32.lib glfw3.lib freeglut.lib FreeImage.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"Z:\Documents\Current\DSAII\OrBITS\Debug\OrBITS.pdb" /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"Z:\Documents\Current\DSAII\OrBITS\Debug\OrBITS.lib" /MACHINE:X86 Debug\AABB.obj
-         Debug\BezierSurface.obj
-         Debug\Button.obj
-         Debug\Camera.obj
-         Debug\Cube.obj
-         Debug\InitShader.obj
-         Debug\Matrix3.obj
-         Debug\Matrix4.obj
-         Debug\Shape.obj
-         Debug\Source.obj
-         Debug\Sphere.obj
-         Debug\Vector3.obj
-         Debug\Vector4.obj
-     1>LINK : warning LNK4098: defaultlib 'MSVCRT' conflicts with use of other libs; use /NODEFAULTLIB:library
-         OrBITS.vcxproj -> Z:\Documents\Current\DSAII\OrBITS\Debug\OrBITS.exe
-       PostBuildEvent:
-         xcopy "Z:\Documents\Current\DSAII\OrBITS\GL\x86\bin" "Z:\Documents\Current\DSAII\OrBITS\Debug" /y
-         :VCEnd
-         Z:\Documents\Current\DSAII\OrBITS\GL\x86\bin\GLFW.dll
-         Z:\Documents\Current\DSAII\OrBITS\GL\x86\bin\freeglut.dll
-         Z:\Documents\Current\DSAII\OrBITS\GL\x86\bin\glew32.dll
-         Z:\Documents\Current\DSAII\OrBITS\GL\x86\bin\glew32mx.dll
-         Z:\Documents\Current\DSAII\OrBITS\GL\x86\bin\FreeImage.dll
-         5 File(s) copied
-     1>Done Building Project "Z:\Documents\Current\DSAII\OrBITS\OrBITS\OrBITS.vcxproj" (Build target(s)).
+﻿Build started 12/14/2013 9:46:53 PM.
 
 Build succeeded.
 
-Time Elapsed 00:00:08.42
-=======
-﻿Build started 12/12/2013 5:23:49 PM.
-
-Build succeeded.
-
-Time Elapsed 00:00:01.33
->>>>>>> 3d9cc66f20b3c9234d239d6ea14f150b8f00866c
+Time Elapsed 00:00:01.43

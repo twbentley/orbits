@@ -4,7 +4,7 @@
 #include <GL/glew.h>
 //#include <GL/glfw.h>
 #include <GL/glfw3.h>
-#include <istream>
+#include <math.h>
 
 class Vector3
 {
@@ -46,9 +46,11 @@ public:
 
 	// Non-class Vector3 Methods
 	static GLfloat dot( const Vector3& u, const Vector3& v );
+	static GLfloat dist( const Vector3& u, const Vector3& v );
 	static GLfloat length( const Vector3& v );
 	static Vector3 normalize( const Vector3& v );
 	static Vector3 cross(const Vector3& a, const Vector3& b);
+	static GLfloat angleBetween( const Vector3& a, const Vector3& b );
 };
 
 #endif
