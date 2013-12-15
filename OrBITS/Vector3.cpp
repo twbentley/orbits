@@ -119,10 +119,17 @@ GLfloat Vector3::dot( const Vector3& u, const Vector3& v )
 {
 	return u.x*v.x + u.y*v.y + u.z*v.z;
 }
+
+// Distance between two vectors
+GLfloat Vector3::dist( const Vector3& u, const Vector3& v )
+{
+	return sqrt((u.x-v.x)*(u.x-v.x) + (u.y-v.y)*(u.y-v.y) + (u.z-v.z)*(u.z-v.z));
+}
+
 // Vector length
 GLfloat Vector3::length( const Vector3& v )
 {
-	return std::sqrt(dot(v,v));
+	return sqrt(dot(v,v));
 }
 // Vector normalize
 Vector3 Vector3::normalize( const Vector3& v )
@@ -138,4 +145,11 @@ Vector3 Vector3::cross(const Vector3& a, const Vector3& b )
 		a.z * b.x - a.x * b.z,
 		a.x * b.y - a.y * b.x
 	);
+}
+
+GLfloat Vector3::angleBetween( const Vector3& a, const Vector3& b )
+{
+	GLfloat ang = acos((Vector3::dot(a,b))/(Vector3::length(a) * Vector3::length(b)));
+
+	return ang;
 }

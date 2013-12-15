@@ -66,6 +66,7 @@
   <ItemGroup>
     <ClCompile Include="AABB.cpp" />
     <ClCompile Include="BezierSurface.cpp" />
+    <ClCompile Include="Body.cpp" />
     <ClCompile Include="Button.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Cube.cpp" />
@@ -82,10 +83,12 @@
     <ClInclude Include="AABB.h" />
     <ClInclude Include="Angel.h" />
     <ClInclude Include="BezierSurface.h" />
+    <ClInclude Include="Body.h" />
     <ClInclude Include="Button.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="CheckError.h" />
     <ClInclude Include="Cube.h" />
+    <ClInclude Include="Globals.h" />
     <ClInclude Include="mat.h" />
     <ClInclude Include="Matrix3.h" />
     <ClInclude Include="Matrix4.h" />

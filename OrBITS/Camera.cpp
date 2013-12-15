@@ -4,7 +4,7 @@
 #define DEG_IN_RAD(x) (x * M_PI / 180.0)
 
 Camera::Camera()
-: nearClippingDistance(0.1f), farClippingDistance(100.0f), fieldOfView(DEG_IN_RAD(67.0f)), aspectRatio(1.0f) {
+: nearClippingDistance(0.1f), farClippingDistance(1000.0f), fieldOfView(DEG_IN_RAD(67.0f)), aspectRatio(1.0f) {
 	Setup();
 	Reset();	// Initialize position and orientation.
 
