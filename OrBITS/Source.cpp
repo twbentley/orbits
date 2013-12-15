@@ -3,10 +3,10 @@
 #include "BezierSurface.h"
 #include "Camera.h"
 #include "Button.h"
-#include <random>
-
 #include "Globals.h"
 #include "Body.h"
+
+#include <random>
 
 // Define for leak detection
 #define _CRTDBG_MAP_ALLOC
@@ -14,43 +14,53 @@
 // Prevent console window from opening
 #pragma comment(linker, "/subsystem:\"windows\" /entry:\"mainCRTStartup\"")
 
+enum STATE { MENU, PLAY, PAUSE };
+
 // GLFW window
 GLFWwindow* window;
 // Shader program
 GLuint program;
+// Shader program for buttons/menu
 GLuint button_program;
 // Shapes in world
 Shape** shapes;
-
 // Celestial Bodies
 Body** bodies;
 int NUM_BODIES = 10;
-
 BezierSurface* bezier;
-Button* button;
+
+Button* startButton;
+Button* pauseImage;
+Button* resetButton;
+
 // Number of objects in world
 int NUM_OBJECTS = 2;
 
 Camera cam;
 float prevSeconds;
 
-GLuint frameBuffer;
+GLuint prevMouseState;
+GLuint currMouseState;
+GLuint prevPauseState;
+GLuint currPauseState;
+STATE gameState = MENU;
+
 unsigned char * data;
 GLuint textureID;
-
+double cursorX;
+double cursorY;
 
 // Forward initialization
 void Initialize();
 void CreateShape();
 BezierSurface* CreateBezierSurf(); // WOOOAH, TOTALLY AWESOME DUDE!
-void GenSystem();	// Inits solar system
-void GenMoonDemo();	// Inits Sun, planet, moon
-void CalcGravity(); // Updates gravitation on planets
 void Display();
-void Keyboard();
+void Input();
 void TryCircle();
 void ResolveCol(Shape& a, Shape&b);
-GLuint loadBMP_custom(const char* imagePath);
+void GenSystem();        // Inits solar system
+void GenMoonDemo();        // Inits Sun, planet, moon
+void CalcGravity(); // Updates gravitation on planets
 
 int main(int argc, char **argv)
 {	
@@ -69,7 +79,7 @@ int main(int argc, char **argv)
 	// GLFW "game loop"
 	while(!glfwWindowShouldClose(window))
 	{
-		Keyboard();
+		Input();
 		Display();
 		glfwPollEvents();
 	}
@@ -92,113 +102,113 @@ int main(int argc, char **argv)
 
 void GenMoonDemo()
 {
-	NUM_BODIES = 2;
-	Body* earth;
-	Body* moon;
-	Body* theSun = new Body(.5f, Vector3(0, 0, 0), Vector3(0,0,0), SUN, program);
-	theSun->Init();
-	bodies = new Body*[NUM_BODIES + 1]; // plus 1 for sun!
-	bodies[0] = theSun;
+        NUM_BODIES = 2;
+        Body* earth;
+        Body* moon;
+        Body* theSun = new Body(.5f, Vector3(0, 0, 0), Vector3(0,0,0), SUN, program);
+        theSun->Init();
+        bodies = new Body*[NUM_BODIES + 1]; // plus 1 for sun!
+        bodies[0] = theSun;
 
-	earth = new Body(.05f, Vector3(0, 0, 0), Vector3(0,0,0), PLANET, program);
-	float semiMajLMult = 1;
-	float minRadius = 10;
-	earth->SetOrbit(*theSun, 
-				minRadius, 
-				Vector3(((rand() % 200 + 1) - 100)*.001f, ((rand() % 200 + 1) - 100)*.001f, ((rand() % 200 + 1) - 100)*.001f), 
-				0, 
-				semiMajLMult);
-	earth->Init();
-	bodies[1] = earth;
+        earth = new Body(.05f, Vector3(0, 0, 0), Vector3(0,0,0), PLANET, program);
+        float semiMajLMult = 1;
+        float minRadius = 10;
+        earth->SetOrbit(*theSun, 
+                                minRadius, 
+                                Vector3(((rand() % 200 + 1) - 100)*.001f, ((rand() % 200 + 1) - 100)*.001f, ((rand() % 200 + 1) - 100)*.001f), 
+                                0, 
+                                semiMajLMult);
+        earth->Init();
+        bodies[1] = earth;
 
-	moon = new Body(.01f, Vector3(0, 0, 0), Vector3(0,0,0), ASTEROID, program);
-	semiMajLMult = 1;
-	minRadius = earth->radius + moon->radius;
-	moon->SetOrbit(*earth, 
-					minRadius*2, 
-					Vector3(((rand() % 200 + 1) - 100)*.001f, ((rand() % 200 + 1) - 100)*.001f, ((rand() % 200 + 1) - 100)*.001f), 
-					0, 
-					semiMajLMult);
-	moon->Init();
-	bodies[2] = moon;
+        moon = new Body(.01f, Vector3(0, 0, 0), Vector3(0,0,0), ASTEROID, program);
+        semiMajLMult = 1;
+        minRadius = earth->radius + moon->radius;
+        moon->SetOrbit(*earth, 
+                                        minRadius*2, 
+                                        Vector3(((rand() % 200 + 1) - 100)*.001f, ((rand() % 200 + 1) - 100)*.001f, ((rand() % 200 + 1) - 100)*.001f), 
+                                        0, 
+                                        semiMajLMult);
+        moon->Init();
+        bodies[2] = moon;
 }
 
 void GenSystem()
 {
-	Body* p1;
-	Body* theSun = new Body(3, Vector3(0, 0, 0), Vector3(0,0,0), SUN, program);
-	theSun->Init();
-	bodies = new Body*[NUM_BODIES + 1]; // plus 1 for sun!
-	bodies[0] = theSun;
+        Body* p1;
+        Body* theSun = new Body(3, Vector3(0, 0, 0), Vector3(0,0,0), SUN, program);
+        theSun->Init();
+        bodies = new Body*[NUM_BODIES + 1]; // plus 1 for sun!
+        bodies[0] = theSun;
 
-	for(int i = 1; i < NUM_BODIES + 1; i++)
-	{
-		float rankScalar = static_cast<float>(i*.1f); // further away a planet is, higher the value
+        for(int i = 1; i < NUM_BODIES + 1; i++)
+        {
+                float rankScalar = static_cast<float>(i*.1f); // further away a planet is, higher the value
 
-		p1 = new Body((.5f) + ((rand() % 10 + 1) - (5-rankScalar*2.f))*.05f, Vector3(0, 0, 0), Vector3(0,0,0), ASTEROID, program);
-		bodies[i] = p1;
-		float semiMajLMult = (rand() % 4+1);
-		if(semiMajLMult <= 4)
-		{
-			semiMajLMult = 1;
-		}
-		else
-		{
-			semiMajLMult -= 3; // from 0->1
-			semiMajLMult *= 4; // from 0->4
-			semiMajLMult += 1; // from 1->5
-		}
+                p1 = new Body((.5f) + ((rand() % 10 + 1) - (5-rankScalar*2.f))*.05f, Vector3(0, 0, 0), Vector3(0,0,0), ASTEROID, program);
+                bodies[i] = p1;
+                float semiMajLMult = (rand() % 4+1);
+                if(semiMajLMult <= 4)
+                {
+                        semiMajLMult = 1;
+                }
+                else
+                {
+                        semiMajLMult -= 3; // from 0->1
+                        semiMajLMult *= 4; // from 0->4
+                        semiMajLMult += 1; // from 1->5
+                }
 
-		// the commented line should be correct, the bottom is easier to debug though, so we'll start with that
-		//p1->SetOrbit(*theSun, 700 + (rand() % 800+1 - 400), Vector3(static_cast<float>((rand() % 200 - 100)/100.f),3 + static_cast<float>((rand() % 200 - 100)/100.f),static_cast<float>((rand() % 200 - 100)/100.f)), 0, semiMajLMult);
-		float minRadius;
-		if (i > 1)
-		{
-			minRadius = Vector3::dist(theSun->pos, bodies[i - 1]->pos) + bodies[i-1]->radius + p1->radius;
-		}
-		else
-		{
-			minRadius = theSun->radius + p1->radius;
-		}
-		p1->SetOrbit(*theSun, 
-					minRadius + (rand() % 10 + 1)*(rankScalar), 
-					Vector3(((rand() % 200 + 1) - 100)*.001f, 1 + ((rand() % 200 + 1) - 100)*.001f, ((rand() % 200 + 1) - 100)*.001f), 
-					0, 
-					semiMajLMult);
-		p1->Init();
-	}
+                // the commented line should be correct, the bottom is easier to debug though, so we'll start with that
+                //p1->SetOrbit(*theSun, 700 + (rand() % 800+1 - 400), Vector3(static_cast<float>((rand() % 200 - 100)/100.f),3 + static_cast<float>((rand() % 200 - 100)/100.f),static_cast<float>((rand() % 200 - 100)/100.f)), 0, semiMajLMult);
+                float minRadius;
+                if (i > 1)
+                {
+                        minRadius = Vector3::dist(theSun->pos, bodies[i - 1]->pos) + bodies[i-1]->radius + p1->radius;
+                }
+                else
+                {
+                        minRadius = theSun->radius + p1->radius;
+                }
+                p1->SetOrbit(*theSun, 
+                                        minRadius + (rand() % 10 + 1)*(rankScalar), 
+                                        Vector3(((rand() % 200 + 1) - 100)*.001f, 1 + ((rand() % 200 + 1) - 100)*.001f, ((rand() % 200 + 1) - 100)*.001f), 
+                                        0, 
+                                        semiMajLMult);
+                p1->Init();
+        }
 }
 
 void CalcGravity()
 {
-	Vector3 totalG = Vector3(0, 0, 0);
-	Body* curr;
-	Body* currPuller;
-	for (int j = 1; j < NUM_BODIES + 1; j++) // Start at index = 1, because bodies[1] == theSun
-	{
-		curr = bodies[j];
-		for (int i = 0; i < NUM_BODIES + 1; i++) // Calc gravitational pull from all bodies, except self
-		{
-			//GRAVITY!!!
-			currPuller = bodies[i];
-			if (curr != currPuller) // no gravity between self and self
-			{
-				float distBetween = Vector3::dist(curr->pos, currPuller->pos);
+        Vector3 totalG = Vector3(0, 0, 0);
+        Body* curr;
+        Body* currPuller;
+        for (int j = 1; j < NUM_BODIES + 1; j++) // Start at index = 1, because bodies[1] == theSun
+        {
+                curr = bodies[j];
+                for (int i = 0; i < NUM_BODIES + 1; i++) // Calc gravitational pull from all bodies, except self
+                {
+                        //GRAVITY!!!
+                        currPuller = bodies[i];
+                        if (curr != currPuller) // no gravity between self and self
+                        {
+                                float distBetween = Vector3::dist(curr->pos, currPuller->pos);
 
-				if (distBetween > .01)//this.radius + curr.radius) // else intersecting
-				{
-					float force = G*((curr->mass*currPuller->mass)/(distBetween*distBetween));
-					float gravAccel = force/curr->mass; // I think... ?
-					Vector3 toCurr = currPuller->pos - curr->pos;
-					toCurr = Vector3::normalize(toCurr);
-					toCurr *= gravAccel;
-					totalG += toCurr;
-				}
-			}
-		}
-		curr->accel = totalG;
-		totalG = Vector3(0,0,0);
-	}
+                                if (distBetween > .01)//this.radius + curr.radius) // else intersecting
+                                {
+                                        float force = G*((curr->mass*currPuller->mass)/(distBetween*distBetween));
+                                        float gravAccel = force/curr->mass; // I think... ?
+                                        Vector3 toCurr = currPuller->pos - curr->pos;
+                                        toCurr = Vector3::normalize(toCurr);
+                                        toCurr *= gravAccel;
+                                        totalG += toCurr;
+                                }
+                        }
+                }
+                curr->accel = totalG;
+                totalG = Vector3(0,0,0);
+        }
 }
 
 // Initialize world
@@ -221,13 +231,15 @@ void Initialize()
 
 	// BUTTON
 	button_program = InitShader("texvshader.glsl", "texfshader.glsl");
-	// Initialize the vertex position attribute from the vertex shader
-    /*GLuint button_loc = glGetAttribLocation( button_program, "vPosition" );
-    glEnableVertexAttribArray( button_loc );
-    glVertexAttribPointer( button_loc, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0) );*/
 
-	button = new Button(0.5f, 0.0f);
-	button->Init(button_program);
+	startButton = new Button(0.5f, 0.0f, "button_start");
+	startButton->Init(button_program);
+	pauseImage = new Button(0.5f, 0.0f, "paused_new");
+	Matrix4::SetPositionMatrix(pauseImage->transMatrix, 0.0f, 1.285f, 0.0f);
+	pauseImage->Init(button_program);
+	resetButton = new Button(0.5f, 0.0f, "button_reset");
+	Matrix4::SetPositionMatrix(resetButton->transMatrix, 0.5f, -1.285f, 0.0f);
+	resetButton->Init(button_program);
 	// BUTTON
 
 	// Load shaders and use resulting shader program
@@ -251,7 +263,7 @@ void Initialize()
 	shapes[1] = sphere;
 
 	//GenSystem();
-	GenMoonDemo();
+    GenMoonDemo();
 
     // Initialize the vertex position attribute from the vertex shader
     //GLuint loc = glGetAttribLocation( program, "vPosition" );
@@ -290,32 +302,49 @@ void Display()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	// Update and render all objects
-	for (int i = 0; i <  NUM_OBJECTS; i++)
+	if(gameState == MENU)
 	{
-		//shapes[i]->Update();
-		//shapes[i]->Render();
+		startButton->Update();
+		startButton->Render();
+	}
+	else if(gameState == PAUSE)
+	{
+		pauseImage->Update();
+		pauseImage->Render();
+
+		resetButton->Update();
+		resetButton->Render();
 	}
 
-	//button->Update();
-	//button->Render();
-	//bezier->Display();
-
-	CalcGravity();
-	for (int i = 0; i < NUM_BODIES + 1; i++)
+	if(gameState == PLAY || gameState == PAUSE)
 	{
-		bodies[i]->Update();
-		bodies[i]->Render();
-	}
+		// Update and render all objects
+		for (int i = 0; i <  NUM_OBJECTS; i++)
+		{
+			if(gameState == PLAY)
+				shapes[i]->Update();
 
-	//// Resolve conflicts between all objects
-	//for(int i = 0; i < NUM_OBJECTS; i++)
-	//{
-	//	for(int j = i + 1; j < NUM_OBJECTS; j++)
-	//	{
-	//		ResolveCol(*shapes[i], *shapes[j]);
-	//	}
-	//}
+			shapes[i]->Render();
+		}
+
+		bezier->Display();
+
+		CalcGravity();
+        for (int i = 0; i < NUM_BODIES + 1; i++)
+        {
+                bodies[i]->Update();
+                bodies[i]->Render();
+        }
+
+		//// Resolve conflicts between all objects
+		//for(int i = 0; i < NUM_OBJECTS; i++)
+		//{
+		//	for(int j = i + 1; j < NUM_OBJECTS; j++)
+		//	{
+		//		ResolveCol(*shapes[i], *shapes[j]);
+		//	}
+		//}
+	}
 
 	glfwSwapBuffers(window);
 }
@@ -412,61 +441,46 @@ void cameraInputCheck()
 	}
 }
 
-// Handle keyboard input
-void Keyboard()//unsigned char key, int mouseX, int mouseY)
+// Handle keyboard and mouse input
+void Input()
 {
+	prevMouseState = currMouseState;
+	currMouseState = glfwGetMouseButton(window, 0);
+	prevPauseState = currPauseState;
+	currPauseState = glfwGetKey(window, GLFW_KEY_P);
+	
 	if(glfwGetKey(window, GLFW_KEY_ESCAPE)) // Quit Game
 		glfwSetWindowShouldClose(window, true);
 
-	cameraInputCheck();
-}
-
-GLuint loadBMP_custom(const char* imagePath)
-{
-	// Data read from the header of the BMP file
-	unsigned char header[54]; // Each BMP file begins by a 54-bytes header
-	unsigned int dataPos;     // Position in the file where the actual data begins
-	unsigned int width, height;
-	unsigned int imageSize;   // = width*height*3
-	// Actual RGB data
-	//unsigned char * data;
-
-	// Open the file
-	FILE * file;
-	errno_t err;
-	if( (err  = fopen_s( &file, imagePath, "rb" )) !=0 ){}
-
-	if (file == NULL)                              
-	{printf("Image could not be opened\n"); return 0;}
- 
-	if ( fread(header, 1, 54, file)!=54 ) // If not 54 bytes read : problem
+	if(gameState == PLAY || gameState == PAUSE)
 	{
-		printf("Not a correct BMP file\n");
-		return false;
+		cameraInputCheck();
+
+		if(currPauseState && !prevPauseState)
+			gameState = (gameState == PLAY) ? PAUSE : PLAY;
 	}
 
-	if ( header[0]!='B' || header[1]!='M' )
+	if(prevMouseState == GLFW_PRESS && currMouseState == GLFW_RELEASE)
 	{
-		printf("Not a correct BMP file\n");
-		return 0;
+		// Get cursor position (0,0 is upper left hand corner)
+		glfwGetCursorPos(window, &cursorX, &cursorY);
+
+		// Convert cursor position to openGL coordinates
+		cursorX = (cursorX / SCREEN_WIDTH) * 2.0 - 1.0;
+		cursorY = (cursorY / SCREEN_HEIGHT);
+		cursorY = (cursorY * 2.0 - 1.0) * -1.0;
+		
+		// If button
+		if(gameState == MENU && (cursorX < startButton->vertices[1].x && cursorX > startButton->vertices[3].x) && (cursorY < startButton->vertices[1].y && cursorY > startButton->vertices[3].x) )
+		{
+			gameState = PLAY;
+		}
+		else if(gameState == PAUSE && (cursorX < resetButton->vertices[1].x + resetButton->transMatrix[0][3] && cursorX > resetButton->vertices[3].x + resetButton->transMatrix[0][3])
+			&& (cursorY < resetButton->vertices[1].y + resetButton->transMatrix[1][3] && cursorY > resetButton->vertices[3].y + + resetButton->transMatrix[1][3]) )
+		{
+			cam.Reset();
+			cam.position = Vector3(0,0,0);
+			Initialize();
+		}
 	}
-
-	// Read ints from the byte array
-	dataPos    = *(int*)&(header[0x0A]);
-	imageSize  = *(int*)&(header[0x22]);
-	width      = *(int*)&(header[0x12]);
-	height     = *(int*)&(header[0x16]);
-
-	// Some BMP files are misformatted, guess missing information
-	if (imageSize==0)    imageSize=width*height*3; // 3 : one byte for each Red, Green and Blue component
-	if (dataPos==0)      dataPos=54; // The BMP header is done that way
-
-	// Create a buffer
-	data = new unsigned char [imageSize];
- 
-	// Read the actual data from the file into the buffer
-	fread(data,1,imageSize,file);
- 
-	//Everything is in memory now, the file can be closed
-	fclose(file);
 }
