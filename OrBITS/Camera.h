@@ -38,7 +38,7 @@ public:
 	Matrix4 ViewMatrix();
 	Matrix4 ProjectionMatrix();
 
-private:
+//private:
 	//Matrix4 CalculateRotationMatrix();
 	//Matrix4 CalculateViewMatrix();
 	//Matrix4 CalculateProjectionMatrix();

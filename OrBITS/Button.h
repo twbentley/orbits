@@ -9,13 +9,14 @@ class Button
 {
 public:
 	Vector3* vertices;
-	vec2* UVs;
+	Vector3* UVs;
 	Vector4* colors;
 	Matrix4 transMatrix;
 	Matrix4 rotMatrix;
 
 	GLfloat width;
 	GLfloat depth;
+	std::string imagePath;
 	
 	GLuint myShaderProgram;
 	GLuint myBuffer;
@@ -24,7 +25,7 @@ public:
 
 	int NUM_VERTS;
 
-	Button(GLfloat width, GLfloat depth);
+	Button(GLfloat width, GLfloat depth, char* imageName);
 	~Button(void);
 
 	void Init(GLuint program);
@@ -32,5 +33,7 @@ public:
 
 	void Render();
 	void Update();
+
+	void Click(void);
 };
 

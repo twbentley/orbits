@@ -5,6 +5,7 @@
 //#include <GL/glfw.h>
 #include <GL/glfw3.h>
 #include <math.h>
+#include <ostream>
 
 class Vector3
 {
@@ -43,6 +44,8 @@ public:
     Vector3& operator *= ( const GLfloat s );
     Vector3& operator *= ( const Vector3& v );
     Vector3& operator /= ( const GLfloat s );
+
+	void ToString(std::ostream&) const;
 
 	// Non-class Vector3 Methods
 	static GLfloat dot( const Vector3& u, const Vector3& v );

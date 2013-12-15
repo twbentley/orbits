@@ -1,16 +1,13 @@
 #include "Button.h"
 
-
-Button::Button(GLfloat width, GLfloat depth)
+Button::Button(GLfloat width, GLfloat depth, char* imageName)
 {
 	NUM_VERTS = 4;
 	this->width = width;
 	this->depth = depth;
-
-	//Matrix4::UpdateRotationMatrix(rotMatrix, 'x', 180);
-	//Matrix4::UpdateRotationMatrix(rotMatrix, 'y', 180);
-	Matrix4::UpdatePositionMatrix(transMatrix, -width, -width, 0.0f);
-	Matrix4::UpdateScaleMatrix(rotMatrix, 0.5f, 0.5f, 1.0f);
+	this->imagePath = "./../Images/";
+ 	this->imagePath += imageName;
+	this->imagePath += ".png";
 }
 
 
@@ -21,28 +18,23 @@ Button::~Button(void)
 void Button::Init(GLuint program)
 {
 	vertices = new Vector3[NUM_VERTS];
-	UVs = new vec2[NUM_VERTS];
+	UVs = new Vector3[NUM_VERTS];
 	colors = new Vector4[NUM_VERTS];
 
-	/*vertices[0] = Vector3( -width	, width		, depth );
+	vertices[0] = Vector3( -width	, width		, depth );
 	vertices[1] = Vector3( width	, width		, depth );
 	vertices[2] = Vector3( width	, -width	, depth );
-	vertices[3] = Vector3( -width	, -width	, depth );*/
+	vertices[3] = Vector3( -width	, -width	, depth );
 
-	vertices[0] = Vector3( 0.0f, 0.0f, 0.0f );
-	vertices[1] = Vector3( 1.0f, 0.0f, 0.0f );
-	vertices[2] = Vector3( 1.0f, 1.0f, 0.0f );
-	vertices[3] = Vector3( 0.0f, 1.0f, 0.0f );
+	UVs[0] = Vector3( 0.0f, 1.0f, 0.0f );
+	UVs[1] = Vector3( 1.0f, 1.0f, 0.0f );
+	UVs[2] = Vector3( 1.0f, 0.0f, 0.0f );
+	UVs[3] = Vector3( 0.0f, 0.0f, 0.0f );
 
 	std::cout << UVs[0].x << " | " << UVs[0].y <<  std::endl;
 	std::cout << UVs[1].x << " | " << UVs[1].y <<  std::endl;
 	std::cout << UVs[2].x << " | " << UVs[2].y <<  std::endl;
 	std::cout << UVs[3].x << " | " << UVs[3].y <<  std::endl;
-
-	//UVs[3] = Vector3( 1.0f - 0.5f, 0.0f - 0.5f, 0.f );
-	//UVs[2] = Vector3( 1.0f - 0.5f, 1.0f - 0.5f, 0.f );
-	//UVs[1] = Vector3( 1.0f - 0.5f, 0.0f - 0.5f, 0.f );
-	//UVs[0] = Vector3( 0.0f - 0.5f, 0.0f - 0.5f, 0.f );
 
 	colors[0] = Vector4(1.0f, 0.0f, 0.0f, 1.0f);
 	colors[1] = Vector4(1.0f, 0.0f, 0.0f, 1.0f);
@@ -64,10 +56,9 @@ void Button::InitOpenGL(GLuint program)
 	// Create and initialize a buffer object for each circle.
     glGenBuffers( 1, &myBuffer );
     glBindBuffer( GL_ARRAY_BUFFER, myBuffer );
-	glBufferData( GL_ARRAY_BUFFER, sizeof(*vertices) * NUM_VERTS + sizeof(*colors) * NUM_VERTS + sizeof(*UVs) * NUM_VERTS, NULL, GL_STATIC_DRAW );
+	glBufferData( GL_ARRAY_BUFFER, sizeof(*vertices) * NUM_VERTS  + sizeof(*UVs) * NUM_VERTS, NULL, GL_STATIC_DRAW );
     glBufferSubData( GL_ARRAY_BUFFER, 0, sizeof(*vertices) * NUM_VERTS, vertices );							// Start at offset 0, go for NUM_VERTS
-    glBufferSubData( GL_ARRAY_BUFFER, sizeof(*vertices) * NUM_VERTS, sizeof(*colors) * NUM_VERTS, colors );	// Start at offset NUM_VERTS, go for NUM_VERTS
-	glBufferSubData( GL_ARRAY_BUFFER, sizeof(*vertices) * NUM_VERTS + sizeof(*colors) * NUM_VERTS, sizeof(*UVs) * NUM_VERTS, UVs );
+	glBufferSubData( GL_ARRAY_BUFFER, sizeof(*vertices) * NUM_VERTS, sizeof(*UVs) * NUM_VERTS, UVs );
 
 	// Initialize the vertex position attribute from the vertex shader
     GLuint loc = glGetAttribLocation( myShaderProgram, "vPosition" );
@@ -77,7 +68,7 @@ void Button::InitOpenGL(GLuint program)
 	// Initialize the UV attribute from the vertex shader
 	GLuint UVloc = glGetAttribLocation( myShaderProgram, "vertexUV" );
     glEnableVertexAttribArray( UVloc );
-    glVertexAttribPointer( UVloc, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
+    glVertexAttribPointer( UVloc, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(sizeof(*vertices) * NUM_VERTS));
 
 	// Set value of rotation for this object
 	GLuint vRotateLoc = glGetUniformLocation(myShaderProgram, "vRotate");
@@ -88,22 +79,15 @@ void Button::InitOpenGL(GLuint program)
 	glUniformMatrix4fv(vTransLoc, 1, GL_TRUE, (GLfloat*)transMatrix);
 
 	// TODO: Load Texture
-	FIBITMAP* bitmap = FreeImage_Load(FreeImage_GetFileType("./blank2.bmp", 0), "./blank2.bmp");
+	FIBITMAP* bitmap = FreeImage_Load(FreeImage_GetFileType("./../Images/button_start.png", 0), imagePath.c_str() );
 	FIBITMAP* pImage = FreeImage_ConvertTo32Bits(bitmap);
 	int nWidth = FreeImage_GetWidth(pImage);
 	int nHeight = FreeImage_GetHeight(pImage);
-	std::cout << FreeImage_GetBits(pImage) << std::endl;
 	glGenTextures(1, &textureID);
 	glBindTexture(GL_TEXTURE_2D, textureID);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, nWidth, nHeight, 0, GL_BGRA, GL_UNSIGNED_BYTE, FreeImage_GetBits(pImage));
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRROR_CLAMP_TO_BORDER_EXT);
- //   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRROR_CLAMP_TO_BORDER_EXT);
- //   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
- //   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
- //   glTexParameteri( GL_TEXTURE_2D, GL_GENERATE_MIPMAP_SGIS, GL_TRUE );
- //   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, nWidth, nHeight, 0, GL_BGRA, GL_UNSIGNED_BYTE,  FreeImage_GetBits(pImage));
 
 	FreeImage_Unload(pImage);
 	glFlush();
@@ -146,11 +130,21 @@ void Button::Update()
 
 	GLuint UVloc = glGetAttribLocation( myShaderProgram, "vertexUV" );
     glEnableVertexAttribArray( UVloc );
-    glVertexAttribPointer( UVloc, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
+    glVertexAttribPointer( UVloc, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(sizeof(*vertices) * NUM_VERTS));
 
 	// Update rotation and translation for cube
 	GLuint vRotateLoc = glGetUniformLocation(myShaderProgram, "vRotate");
 	glUniformMatrix4fv(vRotateLoc, 1, GL_TRUE, (GLfloat*)rotMatrix);
 	GLuint vTransLoc = glGetUniformLocation(myShaderProgram, "vTrans");
 	glUniformMatrix4fv(vTransLoc, 1, GL_TRUE, (GLfloat*)transMatrix);
+}
+
+void Button::Click(void)
+{
+	// TODO: Load Texture
+	FIBITMAP* bitmap = FreeImage_Load(FreeImage_GetFileType("./blank2.bmp", 0), "./blank2.bmp");
+	FIBITMAP* pImage = FreeImage_ConvertTo32Bits(bitmap);
+	int nWidth = FreeImage_GetWidth(pImage);
+	int nHeight = FreeImage_GetHeight(pImage);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, nWidth, nHeight, 0, GL_BGRA, GL_UNSIGNED_BYTE, FreeImage_GetBits(pImage));
 }

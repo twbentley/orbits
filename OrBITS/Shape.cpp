@@ -109,6 +109,12 @@ void Shape::Render()
 	glBindBuffer( GL_ARRAY_BUFFER, myBuffer );
 	glBindVertexArray(vao);
 
+	// Pass updates to shader
+	GLuint vRotateLoc = glGetUniformLocation(myShaderProgram, "vRotate");
+	glUniformMatrix4fv(vRotateLoc, 1, GL_TRUE, (GLfloat*)rotMatrix);
+	GLuint vTransLoc = glGetUniformLocation(myShaderProgram, "vTrans");
+	glUniformMatrix4fv(vTransLoc, 1, GL_TRUE, (GLfloat*)transMatrix);
+
 	// Draw points
 	glDrawArrays(GL_TRIANGLES, 0, NUM_POINTS);
 
@@ -137,12 +143,12 @@ void Shape::Update()
 		vel*= 0.005f;
 	}*/
 
+	// Move object correctly
+	Matrix4::SetPositionMatrix(transMatrix, pos.x, pos.y, pos.z);	// This is here and not in update because of game states
+
 	// Bound and check collisions
 	ComputeAABB();
 	//Bounding();
-
-	// Move object correctly
-	Matrix4::SetPositionMatrix(transMatrix, pos.x, pos.y, pos.z);
 }
 
 // Compute the bounding box for this shape
