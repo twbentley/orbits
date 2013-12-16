@@ -11,7 +11,13 @@ Body::Body(float radius, Vector3 pos, Vector3 vel, string type, GLuint myShaderP
 	CalcMass();
 	accel = Vector3(0,0,0);
 
-	sphere = new Sphere(this->radius, Vector3(0,0,0), this->pos); // no vel, just visual representation
+	if(this->type == SUN)
+		sphere = new Sphere(this->radius, Vector3(0,0,0), this->pos, 50); // no vel, just visual representation
+	if(this->type == PLANET)
+		sphere = new Sphere(this->radius, Vector3(0,0,0), this->pos, 25); // no vel, just visual representation
+	if(this->type == ASTEROID)
+		sphere = new Sphere(this->radius, Vector3(0,0,0), this->pos, 5); // no vel, just visual representation
+
 	sphere->Init(myShaderProgram);
 	trail = queue<Vector3>();
 	frameCount = 0;

@@ -6,7 +6,9 @@
 #include "Globals.h"
 #include "Body.h"
 
+#include <vector>
 #include <random>
+#include <time.h>
 
 // Define for leak detection
 #define _CRTDBG_MAP_ALLOC
@@ -25,8 +27,8 @@ GLuint button_program;
 // Shapes in world
 Shape** shapes;
 // Celestial Bodies
-Body** bodies;
-int NUM_BODIES = 10;
+std::vector<Body*> bodies;
+int NUM_BODIES;
 BezierSurface* bezier;
 
 Button* startButton;
@@ -59,9 +61,12 @@ void Input();
 void cameraInputCheck();
 void TryCircle();
 void ResolveCol(Shape& a, Shape&b);
-void GenSystem();        // Inits solar system
-void GenMoonDemo();        // Inits Sun, planet, moon
-void CalcGravity(); // Updates gravitation on planets
+void GenSystem();       // Inits solar system
+void GenMoonDemo();     // Inits Sun, planet, moon
+void GenTwoBody();		// Inits two planets
+void CalcGravity();		// Updates gravitation on planets
+void AsteroidAttack();	// Spawn number of asteroids surrounding Sun of set radius
+void PlanetCollRes(Body& a, Body& b);
 
 int main(int argc, char **argv)
 {	
@@ -104,6 +109,7 @@ int main(int argc, char **argv)
 // Initialize world
 void Initialize()
 {
+	srand(time(NULL));
 	// Set world size in 3 dimensions
 	WORLD_SIZE = Vector3(100.f, 100.0f, 100.f);
 
@@ -143,7 +149,7 @@ void Initialize()
 	
 	Cube* cube = new Cube( 0.15f, Vector3(0.0f, 0.f, 0.05f), Vector3(8.0f, 0.7f, -35.0f));
 	cube->Init(program);
-	Sphere* sphere = new Sphere( 5.0f, Vector3(0.0f, 0.f, 0.f), Vector3(0.f, 0.f, 0.f));
+	Sphere* sphere = new Sphere(5.0f, Vector3(0.0f, 0.f, 0.f), Vector3(0.f, 0.f, 0.f), 50);
 	sphere->Init(program);
 
 	bezier = CreateBezierSurf();
@@ -151,9 +157,10 @@ void Initialize()
 	shapes = new Shape*[NUM_OBJECTS];
 	shapes[0] = cube;
 	shapes[1] = sphere;
-
-	GenSystem();
+	//GenSystem();
     //GenMoonDemo();
+	GenTwoBody();
+	//AsteroidAttack();
 
     // Initialize the vertex position attribute from the vertex shader
     //GLuint loc = glGetAttribLocation( program, "vPosition" );
@@ -198,12 +205,12 @@ void Display()
 			if(gameState == PLAY)
 				shapes[i]->Update();
 
-			shapes[i]->Render();
+			//shapes[i]->Render();
 		}
 
-		bezier->Display();
+		//bezier->Display();
 
-        for (int i = 0; i < NUM_BODIES + 1; i++)
+        for (int i = 0; i < NUM_BODIES; i++)
         {
 			if(gameState == PLAY)
 			{
@@ -382,111 +389,188 @@ BezierSurface* CreateBezierSurf()
 
 void GenMoonDemo()
 {
-        NUM_BODIES = 2;
-        Body* earth;
-        Body* moon;
-        Body* theSun = new Body(.5f, Vector3(0, 0, 0), Vector3(0,0,0), SUN, program);
-        theSun->Init();
-        bodies = new Body*[NUM_BODIES + 1]; // plus 1 for sun!
-        bodies[0] = theSun;
+	NUM_BODIES = 3;
+	Body* earth;
+	Body* moon;
+	Body* theSun = new Body(.5f, Vector3(0, 0, 0), Vector3(0,0,0), SUN, program);
+	theSun->Init();
 
-        earth = new Body(.05f, Vector3(0, 0, 0), Vector3(0,0,0), PLANET, program);
-        float semiMajLMult = 1;
-        float minRadius = 10;
-        earth->SetOrbit(*theSun, 
-                                minRadius, 
-                                Vector3(((rand() % 200 + 1) - 100)*.001f, ((rand() % 200 + 1) - 100)*.001f, ((rand() % 200 + 1) - 100)*.001f), 
-                                0, 
-                                semiMajLMult);
-        earth->Init();
-        bodies[1] = earth;
+	bodies = std::vector<Body*>();
+	bodies.push_back(theSun);
 
-        moon = new Body(.01f, Vector3(0, 0, 0), Vector3(0,0,0), ASTEROID, program);
-        semiMajLMult = 1;
-        minRadius = earth->radius + moon->radius;
-        moon->SetOrbit(*earth, 
-                                        minRadius*2, 
-                                        Vector3(((rand() % 200 + 1) - 100)*.001f, ((rand() % 200 + 1) - 100)*.001f, ((rand() % 200 + 1) - 100)*.001f), 
-                                        0, 
-                                        semiMajLMult);
-        moon->Init();
-        bodies[2] = moon;
+	earth = new Body(.05f, Vector3(0, 0, 0), Vector3(0,0,0), PLANET, program);
+	float semiMajLMult = 1;
+	float minRadius = 10;
+	earth->SetOrbit(*theSun, 
+		minRadius, 
+		Vector3(((rand() % 200 + 1) - 100)*.001f, ((rand() % 200 + 1) - 100)*.001f, ((rand() % 200 + 1) - 100)*.001f), 
+		0, 
+		semiMajLMult);
+	earth->Init();
+	bodies.push_back(earth);
+
+	moon = new Body(.01f, Vector3(0, 0, 0), Vector3(0,0,0), ASTEROID, program);
+	semiMajLMult = 1;
+	minRadius = earth->radius + moon->radius;
+	moon->SetOrbit(*earth, 
+		minRadius*2, 
+		Vector3(((rand() % 200 + 1) - 100)*.001f, ((rand() % 200 + 1) - 100)*.001f, ((rand() % 200 + 1) - 100)*.001f), 
+		0, 
+		semiMajLMult);
+	moon->Init();
+	bodies.push_back(moon);
+}
+
+void GenTwoBody()
+{
+	NUM_BODIES = 2;
+
+	bodies.clear();
+	
+	Body* x = new Body(1.f, Vector3(-5,0,0), Vector3(0, 0, 0), PLANET, program);
+	x->Init();
+	bodies.push_back(x);
+
+	Body* y = new Body(1.f, Vector3(5,0,0), Vector3(0, .001f, -.005), PLANET, program);
+	y->Init();
+	bodies.push_back(y);
 }
 
 void GenSystem()
 {
-        Body* p1;
-        Body* theSun = new Body(3, Vector3(0, 0, 0), Vector3(0,0,0), SUN, program);
-        theSun->Init();
-        bodies = new Body*[NUM_BODIES + 1]; // plus 1 for sun!
-        bodies[0] = theSun;
+	NUM_BODIES = 7;
+	Body* p1;
+	Body* theSun = new Body(3, Vector3(0, 0, 0), Vector3(0,0,0), SUN, program);
+	theSun->Init();
+	bodies = std::vector<Body*>();
+	bodies.push_back(theSun);
 
-        for(int i = 1; i < NUM_BODIES + 1; i++)
-        {
-                float rankScalar = static_cast<float>(i*.1f); // further away a planet is, higher the value
+	for(int i = 1; i < NUM_BODIES; i++)
+	{
+		float rankScalar = static_cast<float>(i*.1f); // further away a planet is, higher the value
 
-                p1 = new Body((.5f) + ((rand() % 10 + 1) - (5-rankScalar*2.f))*.05f, Vector3(0, 0, 0), Vector3(0,0,0), ASTEROID, program);
-                bodies[i] = p1;
-                float semiMajLMult = (rand() % 4+1);
-                if(semiMajLMult <= 4)
-                {
-                        semiMajLMult = 1;
-                }
-                else
-                {
-                        semiMajLMult -= 3; // from 0->1
-                        semiMajLMult *= 4; // from 0->4
-                        semiMajLMult += 1; // from 1->5
-                }
+		p1 = new Body((.2f) + ((rand() % 10 + 1) - (5-rankScalar*2.f))*.015f, Vector3(0, 0, 0), Vector3(0,0,0), PLANET, program);
+		//p1 = new Body((.2f) + ((rand() % 10 + 1))*.01f, Vector3(0, 0, 0), Vector3(0,0,0), PLANET, program);
+		bodies.push_back(p1);
+		float semiMajLMult = (rand() % 4+1);
+		if(semiMajLMult <= 4)
+		{
+			semiMajLMult = 1;
+		}
+		else
+		{
+			semiMajLMult -= 3; // from 0->1
+			semiMajLMult *= 4; // from 0->4
+			semiMajLMult += 1; // from 1->5
+		}
+		
+		float minRadius;
+		if (i > 1)
+			minRadius = Vector3::dist(theSun->pos, bodies[i - 1]->pos) + bodies[i-1]->radius + p1->radius;
+		else
+			minRadius = theSun->radius + p1->radius;
 
-                // the commented line should be correct, the bottom is easier to debug though, so we'll start with that
-                //p1->SetOrbit(*theSun, 700 + (rand() % 800+1 - 400), Vector3(static_cast<float>((rand() % 200 - 100)/100.f),3 + static_cast<float>((rand() % 200 - 100)/100.f),static_cast<float>((rand() % 200 - 100)/100.f)), 0, semiMajLMult);
-                float minRadius;
-                if (i > 1)
-                {
-                        minRadius = Vector3::dist(theSun->pos, bodies[i - 1]->pos) + bodies[i-1]->radius + p1->radius;
-                }
-                else
-                {
-                        minRadius = theSun->radius + p1->radius;
-                }
-                p1->SetOrbit(*theSun, 
-                                        minRadius + (rand() % 10 + 1)*(rankScalar), 
-                                        Vector3(((rand() % 200 + 1) - 100)*.001f, 1 + ((rand() % 200 + 1) - 100)*.001f, ((rand() % 200 + 1) - 100)*.001f), 
-                                        0, 
-                                        semiMajLMult);
-                p1->Init();
-        }
+		p1->SetOrbit(*theSun, 
+			minRadius + (rand() % 10 + 1)*(rankScalar), 
+			Vector3(((rand() % 200 + 1) - 100)*.001f, 1 + ((rand() % 200 + 1) - 100)*.001f, ((rand() % 200 + 1) - 100)*.001f), 
+			0, 
+			semiMajLMult);
+		p1->Init();
+	}
 }
 
 void CalcGravity()
 {
-        Vector3 totalG = Vector3(0, 0, 0);
-        Body* curr;
-        Body* currPuller;
-        for (int j = 1; j < NUM_BODIES + 1; j++) // Start at index = 1, because bodies[1] == theSun
-        {
-                curr = bodies[j];
-                for (int i = 0; i < NUM_BODIES + 1; i++) // Calc gravitational pull from all bodies, except self
-                {
-                        //GRAVITY!!!
-                        currPuller = bodies[i];
-                        if (curr != currPuller) // no gravity between self and self
-                        {
-                                float distBetween = Vector3::dist(curr->pos, currPuller->pos);
+	Vector3 totalG = Vector3(0, 0, 0);
+	Body* curr;
+	Body* currPuller;
+	Vector3 toCurr(0,0,0);
+	for (int j = 0; j < NUM_BODIES; j++) // Start at index = 1, because bodies[0] == theSun
+	{
+		curr = bodies[j];
+		for (int i = 0; i < NUM_BODIES; i++) // Calc gravitational pull from all bodies, except self
+		{
+			//GRAVITY!!!
+			currPuller = bodies[i];
+			if (curr != currPuller && currPuller->type != ASTEROID) // no gravity between self and self
+			{
+				float distBetween = Vector3::dist(curr->pos, currPuller->pos);
 
-                                if (distBetween > .01)//this.radius + curr.radius) // else intersecting
-                                {
-                                        float force = G*((curr->mass*currPuller->mass)/(distBetween*distBetween));
-                                        float gravAccel = force/curr->mass; // I think... ?
-                                        Vector3 toCurr = currPuller->pos - curr->pos;
-                                        toCurr = Vector3::normalize(toCurr);
-                                        toCurr *= gravAccel;
-                                        totalG += toCurr;
-                                }
-                        }
-                }
-                curr->accel = totalG;
-                totalG = Vector3(0,0,0);
-        }
+				if (distBetween > .01)//this.radius + curr.radius) // else intersecting
+				{
+					float force = G*((curr->mass*currPuller->mass)/(distBetween*distBetween));
+					float gravAccel = force/curr->mass; // I think... ?
+					toCurr = currPuller->pos - curr->pos;
+					toCurr = Vector3::normalize(toCurr);
+					toCurr *= gravAccel;
+					totalG += toCurr;
+				}
+			}
+		}
+		curr->accel = totalG;
+		totalG = Vector3(0,0,0);
+		PlanetCollRes(*bodies[0], *bodies[1]);
+	}
+}
+
+void AsteroidAttack()
+{
+	float numAsteroids = 100;
+	int oldNumBodies = NUM_BODIES;
+	NUM_BODIES += numAsteroids;
+	Vector3 astPos;
+	for (int i = 0; i < numAsteroids; i++)
+	{
+		astPos.x = rand()%100 - 50;
+		astPos.y = rand()%100 - 50;
+		astPos.z = rand()%100 - 50;
+		astPos = Vector3::normalize(astPos);
+		astPos *=  20;
+		bodies.push_back(new Body((.05f) + ((rand() % 10 + 1))*.004f, astPos, Vector3(0,0,0), ASTEROID, program));
+		(bodies[oldNumBodies + i])->Init();
+	}
+}
+
+void PlanetCollRes(Body& a, Body& b)
+{
+	float dist = Vector3::dist(a.pos, b.pos);
+	if (dist < a.radius + b.radius) //they are intersecting
+	{
+		float overlap = (a.radius + b.radius) - dist;
+		Vector3 toB = b.pos - a.pos;
+
+		// Fixes pos, so balls are just barely contacting
+		Vector3 move = Vector3::normalize(toB);
+		move *= overlap / 2.f;
+		b.pos += move;
+		move *= -1;
+		a.pos += move;
+
+		// First, find the normalized vector n from the center of 
+		// circle1 to the center of circle2
+		Vector3 n = b.pos - a.pos; //c1, c2
+		n = Vector3::normalize(n);
+		// Find the length of the component of each of the movement
+		// vectors along n. 
+		// a1 = v1 . n
+		// a2 = v2 . n
+		float a1 = Vector3::dot(b.vel,n);
+		float a2 = Vector3::dot(a.vel,n);
+
+		// Using the optimized version, 
+		// optimizedP =  2(a1 - a2)
+		//              -----------
+		//                m1 + m2
+		float optimizedP = (2.0 * (a1 - a2)) / (b.mass + a.mass);
+
+		// Calculate v1', the new movement vector of circle1
+		// v1' = v1 - optimizedP * m2 * n
+		Vector3 bNew = b.vel - (n * (optimizedP * a.mass));
+		b.vel = bNew;
+
+		// Calculate v1', the new movement vector of circle1
+		// v2' = v2 + optimizedP * m1 * n
+		Vector3 aNew = a.vel + (n * (optimizedP * b.mass));
+		a.vel = aNew;
+	}
 }

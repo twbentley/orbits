@@ -3,10 +3,10 @@
 Sphere::Sphere(void) : Shape() { }
 
 // Parameterized constructor
-Sphere::Sphere(GLfloat width, Vector3 vel, Vector3 pos) : Shape(width, vel, pos)
+Sphere::Sphere(GLfloat width, Vector3 vel, Vector3 pos, int resolution) : Shape(width, vel, pos)
 {
-	nRings = 50;
-	nSegments = 50;
+	nRings = resolution;
+	nSegments = resolution;
 	radius = width;// / 2;
 
 	//NUM_POINTS = (nRings + 1) * (nSegments + 1);

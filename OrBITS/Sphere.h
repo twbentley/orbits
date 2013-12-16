@@ -20,7 +20,7 @@ public:
 	std::vector<Ring> rings;
 
 	Sphere(void);
-	Sphere(GLfloat radius, Vector3 vel, Vector3 pos);
+	Sphere(GLfloat radius, Vector3 vel, Vector3 pos, int resolution);
 	Sphere(const Sphere& toCopy);
 	Sphere& operator= (const Sphere& toCopy);
 	~Sphere(void);
