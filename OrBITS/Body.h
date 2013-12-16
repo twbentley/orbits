@@ -9,6 +9,7 @@
 #include "AABB.h"
 #include <string>
 #include <queue>
+#include <vector>
 
 class Body
 {
@@ -24,7 +25,7 @@ public:
 	Sphere* sphere;
 	std::queue<Vector3> trail;
 
-	Vector3* points;
+	std::vector<Vector3> points;
 	Vector4* colors;
 	Matrix4 transMatrix;
 	Matrix4 rotMatrix;

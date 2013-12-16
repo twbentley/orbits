@@ -31,10 +31,10 @@ void Body::Init()
 		trail.push(pos);
 	}
 
-	points = new Vector3[NUM_POINTS];
+	points = vector<Vector3>();//[NUM_POINTS];
 	for (int i = 0; i < NUM_POINTS; i++)
 	{
-		points[i] = pos;
+		points.push_back(pos);
 	}
 
 	colors = new Vector4[NUM_POINTS];
@@ -55,9 +55,9 @@ void Body::InitOpenGL()
 	// Create and initialize a buffer object for each circle.
     glGenBuffers( 1, &myBuffer );
     glBindBuffer( GL_ARRAY_BUFFER, myBuffer );
-	glBufferData( GL_ARRAY_BUFFER, sizeof(*points) * NUM_POINTS + sizeof(*colors) * NUM_POINTS, points, GL_STATIC_DRAW );
-    glBufferSubData( GL_ARRAY_BUFFER, 0, sizeof(*points) * NUM_POINTS, points );							// Start at offset 0, go for NUM_VERTS
-    glBufferSubData( GL_ARRAY_BUFFER, sizeof(*points) * NUM_POINTS, sizeof(*colors) * NUM_POINTS, colors );	// Start at offset NUM_VERTS, go for NUM_VERTS
+	glBufferData( GL_ARRAY_BUFFER, sizeof(points[0]) * NUM_POINTS + sizeof(*colors) * NUM_POINTS, NULL, GL_STATIC_DRAW );
+    glBufferSubData( GL_ARRAY_BUFFER, 0, sizeof(points[0]) * NUM_POINTS, &points[0] );							// Start at offset 0, go for NUM_VERTS
+    glBufferSubData( GL_ARRAY_BUFFER, sizeof(points[0]) * NUM_POINTS, sizeof(*colors) * NUM_POINTS, colors );	// Start at offset NUM_VERTS, go for NUM_VERTS
 
 	// Load shaders and use the resulting shader program
     //glUseProgram( myShaderProgram );
@@ -78,7 +78,7 @@ void Body::InitOpenGL()
 	// Set up colors for this object
 	GLuint vfColorLoc = glGetAttribLocation(myShaderProgram, "vfColor");
 	glEnableVertexAttribArray(vfColorLoc);
-	glVertexAttribPointer(vfColorLoc, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(sizeof(*points) * NUM_POINTS));
+	glVertexAttribPointer(vfColorLoc, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(sizeof(points[0]) * NUM_POINTS));
 	glUniform4f(vfColorLoc, 0.0f, 1.0f, 0.0f, 1.0f);
 }
 
@@ -106,17 +106,23 @@ void Body::Update()
 void Body::UpdateTrail()
 {
 	if (frameCount == 0)
-	{trail.push(pos);}
+	{
+		trail.push(pos);
+		points.insert(points.begin(), pos);
+	}
 
 	if (trail.size() > NUM_POINTS)
-	{trail.pop();}
+	{
+		trail.pop();
+		points.pop_back();
+	}
 
-	queue<Vector3> temp = queue<Vector3>(trail);
+	/*queue<Vector3> temp = queue<Vector3>(trail);
 	for (int i = 0; i < NUM_POINTS; i++)
 	{
 		points[i] = Vector3(temp.front());
 		temp.pop();
-	}
+	}*/
 }
 
 void Body::RenderTrail()
@@ -127,9 +133,9 @@ void Body::RenderTrail()
 	glBindVertexArray(vao);
 
 	// Reload points (they were recalculated)
-	glBufferData( GL_ARRAY_BUFFER, sizeof(*points) * NUM_POINTS + sizeof(*colors) * NUM_POINTS, NULL, GL_STATIC_DRAW );					// Start at offset 0, go for NUM_VERTS
-	glBufferSubData( GL_ARRAY_BUFFER, 0, sizeof(*points) * NUM_POINTS, points );							// Start at offset 0, go for NUM_VERTS
-    glBufferSubData( GL_ARRAY_BUFFER, sizeof(*points) * NUM_POINTS, sizeof(*colors) * NUM_POINTS, colors );
+	glBufferData( GL_ARRAY_BUFFER, sizeof(points[0]) * NUM_POINTS + sizeof(*colors) * NUM_POINTS, NULL, GL_STATIC_DRAW );					// Start at offset 0, go for NUM_VERTS
+	glBufferSubData( GL_ARRAY_BUFFER, 0, sizeof(points[0]) * NUM_POINTS, &points[0] );							// Start at offset 0, go for NUM_VERTS
+    glBufferSubData( GL_ARRAY_BUFFER, sizeof(points[0]) * NUM_POINTS, sizeof(*colors) * NUM_POINTS, colors );
 
 	GLuint loc = glGetAttribLocation( myShaderProgram, "vPosition" );
     glEnableVertexAttribArray( loc );
@@ -144,7 +150,7 @@ void Body::RenderTrail()
 	// colors
 	GLuint vfColorLoc = glGetAttribLocation(myShaderProgram, "vfColor");
 	glEnableVertexAttribArray(vfColorLoc);
-	glVertexAttribPointer(vfColorLoc, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(sizeof(*points) * NUM_POINTS));
+	glVertexAttribPointer(vfColorLoc, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(sizeof(points[0]) * NUM_POINTS));
 	glUniform4f(vfColorLoc, 0.0f, 1.0f, 0.0f, 1.0f);
 
 	glDrawArrays(GL_LINE_STRIP, 0, NUM_POINTS);
