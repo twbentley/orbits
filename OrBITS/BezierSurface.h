@@ -73,6 +73,8 @@ public:
 	// Influenced on corner colors
 	Vector4 getColor( int widthIndex, int heightIndex, int widthSize, int heightSize );
 
+	// Updates the curve
+	void Update();
 	// Displays the Curve
 	void Display();
 

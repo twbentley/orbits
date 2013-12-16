@@ -200,6 +200,8 @@ void Display()
 	}
 	else if(gameState == PLAY)
 	{
+		bezier->Update();
+
 		CalcGravity();
 
 		asteroidButton->Update();
@@ -388,12 +390,12 @@ BezierSurface* CreateBezierSurf()
 	std::vector<Vector3> control1Points;
 	control1Points.push_back( Vector3( 0.0f, 0.0f, 0.0f) );
 	control1Points.push_back( Vector3( 3.0f, 0.0f, 1.0f) );
-	control1Points.push_back( Vector3( 6.0f, 1.0f, 0.0f) );
-	control1Points.push_back( Vector3( 10.0f, 0.0f, 0.0) );
+	control1Points.push_back( Vector3( 6.0f, 10.0f, 0.0f) );
+	control1Points.push_back( Vector3( 10.0f, 0.0f, 5.0) );
 
 	std::vector<Vector3> control2Points;
 	control2Points.push_back( Vector3( 0.0f, 0.0f, 0.0f) );
-	control2Points.push_back( Vector3( 1.0f, 3.0f, 0.0f) );
+	control2Points.push_back( Vector3( 1.0f, 3.0f, 10.0f) );
 	control2Points.push_back( Vector3( 0.0f, 6.0f, 1.0f) );
 	control2Points.push_back( Vector3( 0.0f, 10.0f, 0.0) );
 

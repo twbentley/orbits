@@ -26,6 +26,7 @@ BezierSurface::BezierSurface(GLuint myShaderProgram, std::vector<Vector3> points
 	_vertices	= vector<Vector3>( _numberOfTimeStamps * _numberOfTimeStamps * 12 );	// 12 triangles made (6) each side
 	_colors		= vector<Vector4>( _numberOfTimeStamps * _numberOfTimeStamps * 12 );	// 12 triangles made
 
+	// TODO: Put bezier on start screen only, and fill out space behind
 	float scaleFactor = 1.0f;
 	Matrix4::UpdateScaleMatrix(scaleMatrix, 2.0f, 2.0f, 2.0f);
 	Matrix4::UpdatePositionMatrix(transMatrix, -10.0f * (scaleFactor / 2), -10.0f * (scaleFactor / 2), -10.0f);
@@ -296,6 +297,18 @@ Vector4 BezierSurface::getColor( int widthIndex, int heightIndex, int widthSize,
 }
 #pragma endregion
 
+//Update the Curve
+void BezierSurface::Update()
+{
+	glUseProgram(myShaderProgram);
+	glBindBuffer( GL_ARRAY_BUFFER, _curveVertexbuffer );
+	glBindVertexArray(vao);
+
+	// Oscillate skewing
+	degrees = (degrees + 1) % 360;
+	Matrix4::UpdateSkewMatrix(skewMatrix, Vector4( sin( degrees * PI / 180) / 2, cos( degrees * PI / 180) / 2, sin( degrees * PI / 180) * 2, 1.0f) );
+}
+
 // Display the Curve
 #pragma region Display
 void BezierSurface::Display() 
@@ -304,10 +317,6 @@ void BezierSurface::Display()
 	glUseProgram(myShaderProgram);
 	glBindBuffer( GL_ARRAY_BUFFER, _curveVertexbuffer );
 	glBindVertexArray(vao);
-
-	// Oscillate skewing
-	degrees = (degrees + 1) % 360;
-	Matrix4::UpdateSkewMatrix(skewMatrix, Vector4( sin( degrees * PI / 180), cos( degrees * PI / 180), 1.0f, 1.0f) );
 
 	GLuint loc = glGetAttribLocation(myShaderProgram, "vPosition");
 	glEnableVertexAttribArray( loc );

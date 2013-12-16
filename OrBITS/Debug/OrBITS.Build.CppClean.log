@@ -3,7 +3,6 @@
 \\BANNER.MAIN.AD.RIT.EDU\STUDENTS\TWB1193\IGMPROFILE\DESKTOP\GITHUB\ORBITS\ORBITS\DEBUG\BODY.OBJ
 \\BANNER.MAIN.AD.RIT.EDU\STUDENTS\TWB1193\IGMPROFILE\DESKTOP\GITHUB\ORBITS\ORBITS\DEBUG\BUTTON.OBJ
 \\BANNER.MAIN.AD.RIT.EDU\STUDENTS\TWB1193\IGMPROFILE\DESKTOP\GITHUB\ORBITS\ORBITS\DEBUG\CAMERA.OBJ
-\\BANNER.MAIN.AD.RIT.EDU\STUDENTS\TWB1193\IGMPROFILE\DESKTOP\GITHUB\ORBITS\ORBITS\DEBUG\CONTAINER.OBJ
 \\BANNER.MAIN.AD.RIT.EDU\STUDENTS\TWB1193\IGMPROFILE\DESKTOP\GITHUB\ORBITS\ORBITS\DEBUG\CUBE.OBJ
 \\BANNER.MAIN.AD.RIT.EDU\STUDENTS\TWB1193\IGMPROFILE\DESKTOP\GITHUB\ORBITS\ORBITS\DEBUG\INITSHADER.OBJ
 \\BANNER.MAIN.AD.RIT.EDU\STUDENTS\TWB1193\IGMPROFILE\DESKTOP\GITHUB\ORBITS\ORBITS\DEBUG\MATRIX3.OBJ
@@ -18,6 +17,7 @@
 \\BANNER.MAIN.AD.RIT.EDU\STUDENTS\TWB1193\IGMPROFILE\DESKTOP\GITHUB\ORBITS\DEBUG\ORBITS.EXE
 \\BANNER.MAIN.AD.RIT.EDU\STUDENTS\TWB1193\IGMPROFILE\DESKTOP\GITHUB\ORBITS\DEBUG\ORBITS.PDB
 \\banner.main.ad.rit.edu\students\twb1193\IGMProfile\Desktop\GitHub\orbits\OrBITS\Debug\AABB.obj
+\\banner.main.ad.rit.edu\students\twb1193\IGMProfile\Desktop\GitHub\orbits\OrBITS\Debug\Body.obj
 \\banner.main.ad.rit.edu\students\twb1193\IGMProfile\Desktop\GitHub\orbits\OrBITS\Debug\Button.obj
 \\banner.main.ad.rit.edu\students\twb1193\IGMProfile\Desktop\GitHub\orbits\OrBITS\Debug\Camera.obj
 \\banner.main.ad.rit.edu\students\twb1193\IGMProfile\Desktop\GitHub\orbits\OrBITS\Debug\Cube.obj
@@ -25,11 +25,9 @@
 \\banner.main.ad.rit.edu\students\twb1193\IGMProfile\Desktop\GitHub\orbits\OrBITS\Debug\Matrix3.obj
 \\banner.main.ad.rit.edu\students\twb1193\IGMProfile\Desktop\GitHub\orbits\OrBITS\Debug\Matrix4.obj
 \\banner.main.ad.rit.edu\students\twb1193\IGMProfile\Desktop\GitHub\orbits\OrBITS\Debug\Shape.obj
+\\banner.main.ad.rit.edu\students\twb1193\IGMProfile\Desktop\GitHub\orbits\OrBITS\Debug\Sphere.obj
 \\banner.main.ad.rit.edu\students\twb1193\IGMProfile\Desktop\GitHub\orbits\OrBITS\Debug\Vector3.obj
 \\banner.main.ad.rit.edu\students\twb1193\IGMProfile\Desktop\GitHub\orbits\OrBITS\Debug\Vector4.obj
-\\banner.main.ad.rit.edu\students\twb1193\IGMProfile\Desktop\GitHub\orbits\OrBITS\Debug\Container.obj
-\\banner.main.ad.rit.edu\students\twb1193\IGMProfile\Desktop\GitHub\orbits\OrBITS\Debug\Body.obj
-\\banner.main.ad.rit.edu\students\twb1193\IGMProfile\Desktop\GitHub\orbits\OrBITS\Debug\Sphere.obj
 \\banner.main.ad.rit.edu\students\twb1193\IGMProfile\Desktop\GitHub\orbits\OrBITS\Debug\Source.obj
 \\banner.main.ad.rit.edu\students\twb1193\IGMProfile\Desktop\GitHub\orbits\OrBITS\Debug\BezierSurface.obj
 \\banner.main.ad.rit.edu\students\twb1193\IGMProfile\Desktop\GitHub\orbits\OrBITS\Debug\CL.read.1.tlog
