@@ -1,3 +1,5 @@
+// Slightly modified from Matt DeNovio's Bezier Surface example
+
 #ifndef BEZIER_SURFACE_H
 #define BEZIER_SURFACE_H
 

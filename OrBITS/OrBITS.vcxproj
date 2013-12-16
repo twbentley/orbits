@@ -69,6 +69,7 @@
     <ClCompile Include="Body.cpp" />
     <ClCompile Include="Button.cpp" />
     <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="Container.cpp" />
     <ClCompile Include="Cube.cpp" />
     <ClCompile Include="InitShader.cpp" />
     <ClCompile Include="Matrix3.cpp" />
@@ -87,6 +88,7 @@
     <ClInclude Include="Button.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="CheckError.h" />
+    <ClInclude Include="Container.h" />
     <ClInclude Include="Cube.h" />
     <ClInclude Include="Globals.h" />
     <ClInclude Include="mat.h" />

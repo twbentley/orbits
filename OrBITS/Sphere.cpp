@@ -126,9 +126,9 @@ void Sphere::GenerateVertices()
 
 void Sphere::GenerateTriangles()
 {
-	for(int currRing = 0; currRing < nRings; currRing++)
+	for(GLuint currRing = 0; currRing < nRings; currRing++)
 	{
-		for(int currPt = 0; currPt < nSegments; currPt++)
+		for(GLuint currPt = 0; currPt < nSegments; currPt++)
 		{
 			if(currPt + 1 < nSegments)
 			{

@@ -31,7 +31,7 @@ BezierSurface::BezierSurface(GLuint myShaderProgram, std::vector<Vector3> points
 	Matrix4::UpdateScaleMatrix(scaleMatrix, 2.0f, 2.0f, 2.0f);
 	Matrix4::UpdatePositionMatrix(transMatrix, -10.0f * (scaleFactor / 2), -10.0f * (scaleFactor / 2), -10.0f);
 	Matrix4::UpdateRotationMatrix(rotMatrix, 'z', 180);
-	Matrix4::UpdateSkewMatrix(skewMatrix, Vector4(0.2, 0.5, 0.1, 1));
+	Matrix4::UpdateSkewMatrix(skewMatrix, Vector4(0.2f, 0.5f, 0.1f, 1.f));
 
 #pragma region Fill Colors for Control Points and Lines
 	int controlPointsSize1 = _controlPoints1.size();
@@ -306,7 +306,7 @@ void BezierSurface::Update()
 
 	// Oscillate skewing
 	degrees = (degrees + 1) % 360;
-	Matrix4::UpdateSkewMatrix(skewMatrix, Vector4( sin( degrees * PI / 180) / 2, cos( degrees * PI / 180) / 2, sin( degrees * PI / 180) * 2, 1.0f) );
+	Matrix4::UpdateSkewMatrix(skewMatrix, Vector4( sin( degrees * PI / 180) / 2.0f, cos( degrees * PI / 180) / 2.0f, sin( degrees * PI / 180) * 2.0f, 1.0f) );
 }
 
 // Display the Curve

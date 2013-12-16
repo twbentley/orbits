@@ -1,12 +1,12 @@
 #ifndef CONTAINER_H
 #define CONTAINER_H
 
-#include "Vector3.h"
+#include "Cube.h"
 #include "Body.h"
 
 #include <vector>
 
-class Container
+class Container : Cube
 {
 public:
 	Vector3 pos;

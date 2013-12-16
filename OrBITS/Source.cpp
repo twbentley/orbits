@@ -447,7 +447,7 @@ void GenTwoBody()
 	x->Init();
 	bodies.push_back(x);
 
-	Body* y = new Body(1.f, Vector3(5,0,0), Vector3(0, .001f, -.005), PLANET, program);
+	Body* y = new Body(1.f, Vector3(5.f,0.f,0.f), Vector3(0.f, 0.001f, -0.005), PLANET, program);
 	y->Init();
 	bodies.push_back(y);
 }
@@ -555,6 +555,7 @@ void AsteroidAttack()
 	}
 }
 
+// Based off of sphere collision from - 
 void PlanetCollRes(Body& a, Body& b)
 {
 	float dist = Vector3::dist(a.pos, b.pos);
