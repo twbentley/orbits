@@ -21,12 +21,16 @@ BezierSurface::BezierSurface(GLuint myShaderProgram, std::vector<Vector3> points
     glGenVertexArrays( 1, &vao );
     glBindVertexArray( vao );
 
-	Matrix4::UpdatePositionMatrix(transMatrix, 0, 0, 0);
-
 	// Preallocate size of vectors
 	_pointsOnTheSurface = vector<vector<Vector3>>( _numberOfTimeStamps + 1 );
 	_vertices	= vector<Vector3>( _numberOfTimeStamps * _numberOfTimeStamps * 12 );	// 12 triangles made (6) each side
 	_colors		= vector<Vector4>( _numberOfTimeStamps * _numberOfTimeStamps * 12 );	// 12 triangles made
+
+	float scaleFactor = 1.0f;
+	Matrix4::UpdateScaleMatrix(scaleMatrix, 2.0f, 2.0f, 2.0f);
+	Matrix4::UpdatePositionMatrix(transMatrix, -10.0f * (scaleFactor / 2), -10.0f * (scaleFactor / 2), -10.0f);
+	Matrix4::UpdateRotationMatrix(rotMatrix, 'z', 180);
+	Matrix4::UpdateSkewMatrix(skewMatrix, Vector4(0.2, 0.5, 0.1, 1));
 
 #pragma region Fill Colors for Control Points and Lines
 	int controlPointsSize1 = _controlPoints1.size();
@@ -85,6 +89,14 @@ BezierSurface::BezierSurface(GLuint myShaderProgram, std::vector<Vector3> points
 	// Set value of translation for this object
 	GLuint vTransLoc = glGetUniformLocation(myShaderProgram, "vTrans");
 	glUniformMatrix4fv(vTransLoc, 1, GL_TRUE, (GLfloat*)transMatrix);
+
+	// Set value of translation for this object
+	GLuint vScaleLoc = glGetUniformLocation(myShaderProgram, "vScale");
+	glUniformMatrix4fv(vScaleLoc , 1, GL_TRUE, (GLfloat*)scaleMatrix);
+
+	// Set value of translation for this object
+	GLuint vSkewLoc = glGetUniformLocation(myShaderProgram, "vSkew");
+	glUniformMatrix4fv(vSkewLoc , 1, GL_TRUE, (GLfloat*)skewMatrix);
 
 	// Enable value of color for this object
 	GLuint vfColorLoc = glGetAttribLocation( myShaderProgram, "vfColor" ); 
@@ -293,7 +305,7 @@ void BezierSurface::Display()
 	glBindBuffer( GL_ARRAY_BUFFER, _curveVertexbuffer );
 	glBindVertexArray(vao);
 
-	//Matrix4::UpdateRotationMatrix(rotMatrix, 'z', 1.0f);
+	//Matrix4::UpdateRotationMatrix(rotMatrix, 'y', 5.0f);
 
 	GLuint loc = glGetAttribLocation(myShaderProgram, "vPosition");
 	glEnableVertexAttribArray( loc );
@@ -310,6 +322,14 @@ void BezierSurface::Display()
 	// Set value of translation for this object
 	GLuint vTransLoc = glGetUniformLocation(myShaderProgram, "vTrans");
 	glUniformMatrix4fv(vTransLoc, 1, GL_TRUE, (GLfloat*)transMatrix);
+
+	// Set value of translation for this object
+	GLuint vScaleLoc = glGetUniformLocation(myShaderProgram, "vScale");
+	glUniformMatrix4fv(vScaleLoc , 1, GL_TRUE, (GLfloat*)scaleMatrix);
+
+	// Set value of translation for this object
+	GLuint vSkewLoc = glGetUniformLocation(myShaderProgram, "vSkew");
+	glUniformMatrix4fv(vSkewLoc , 1, GL_TRUE, (GLfloat*)skewMatrix);
 
 	glDrawArrays( GL_TRIANGLES, 0, _vertices.size() );
 

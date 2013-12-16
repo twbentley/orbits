@@ -20,8 +20,11 @@ public:
 	Vector4* base_colors;
 	Vector3* points;
 	Vector4* colors;
+
 	Matrix4 transMatrix;
 	Matrix4 rotMatrix;
+	Matrix4 scaleMatrix;
+	Matrix4 skewMatrix;
 
 	GLfloat width;
 	Vector3 vel;
