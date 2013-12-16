@@ -305,7 +305,9 @@ void BezierSurface::Display()
 	glBindBuffer( GL_ARRAY_BUFFER, _curveVertexbuffer );
 	glBindVertexArray(vao);
 
-	//Matrix4::UpdateRotationMatrix(rotMatrix, 'y', 5.0f);
+	// Oscillate skewing
+	degrees = (degrees + 1) % 360;
+	Matrix4::UpdateSkewMatrix(skewMatrix, Vector4( sin( degrees * PI / 180), cos( degrees * PI / 180), 1.0f, 1.0f) );
 
 	GLuint loc = glGetAttribLocation(myShaderProgram, "vPosition");
 	glEnableVertexAttribArray( loc );

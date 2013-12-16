@@ -202,7 +202,6 @@ void Display()
 	{
 		CalcGravity();
 
-		
 		asteroidButton->Update();
 		asteroidButton->Render();
 	}
@@ -218,7 +217,7 @@ void Display()
 			//shapes[i]->Render();
 		}
 
-		//bezier->Display();
+		bezier->Display();
 
         for (int i = 0; i < NUM_BODIES; i++)
         {
@@ -287,7 +286,7 @@ void Input()
 		else if( gameState == PLAY && (cursorX < asteroidButton->vertices[1].x + asteroidButton->transMatrix[0][3] && cursorX > asteroidButton->vertices[3].x + asteroidButton->transMatrix[0][3])
 			&& (cursorY < asteroidButton->vertices[1].y + asteroidButton->transMatrix[1][3] && cursorY > asteroidButton->vertices[3].y + + asteroidButton->transMatrix[1][3]) )
 		{
-			// AsteroidAttack();
+			AsteroidAttack();
 		}
 	}
 }
@@ -524,7 +523,15 @@ void CalcGravity()
 		}
 		curr->accel = totalG;
 		totalG = Vector3(0,0,0);
-		PlanetCollRes(*bodies[0], *bodies[1]);
+	}
+
+	// Rigorous collision detection (sphere-sphere)
+	for(int i = 0; i < NUM_BODIES; i++)
+	{
+		for(int j = i + 1; j < NUM_BODIES; j++)
+		{
+			PlanetCollRes(*bodies[i], *bodies[j]);
+		}
 	}
 }
 

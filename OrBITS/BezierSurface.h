@@ -22,10 +22,12 @@ private:
 	std::vector<Vector4> _colors;
 
 	//Matrix4 _model;												// Model Matrix
+	GLuint degrees;
 	Matrix4 transMatrix;
 	Matrix4 rotMatrix;
 	Matrix4 scaleMatrix;
 	Matrix4 skewMatrix;
+
 	GLuint _curveVertexbuffer;										// Buffers, Note for example Control Points 1 and 2 can be different sizes
 	GLuint _controlVertexbuffer1;
 	GLuint _controlVertexbuffer2;
