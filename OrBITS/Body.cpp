@@ -75,6 +75,13 @@ void Body::InitOpenGL()
 	GLuint vTransLoc = glGetUniformLocation(myShaderProgram, "vTrans");
 	glUniformMatrix4fv(vTransLoc, 1, GL_TRUE, (GLfloat*)transMatrix);
 
+	// Set value of translation for this object
+	GLuint vScaleLoc = glGetUniformLocation(myShaderProgram, "vScale");
+	glUniformMatrix4fv(vScaleLoc, 1, GL_TRUE, (GLfloat*)scaleMatrix);
+
+	GLuint vSkewLoc = glGetUniformLocation(myShaderProgram, "vSkew");
+	glUniformMatrix4fv(vSkewLoc, 1, GL_TRUE, (GLfloat*)skewMatrix);
+
 	// Set up colors for this object
 	GLuint vfColorLoc = glGetAttribLocation(myShaderProgram, "vfColor");
 	glEnableVertexAttribArray(vfColorLoc);
@@ -146,6 +153,12 @@ void Body::RenderTrail()
 
 	GLuint vTransLoc = glGetUniformLocation(myShaderProgram, "vTrans");
 	glUniformMatrix4fv(vTransLoc, 1, GL_TRUE, (GLfloat*)transMatrix);
+
+	GLuint vScaleLoc = glGetUniformLocation(myShaderProgram, "vScale");
+	glUniformMatrix4fv(vScaleLoc, 1, GL_TRUE, (GLfloat*)scaleMatrix);
+
+	GLuint vSkewLoc = glGetUniformLocation(myShaderProgram, "vSkew");
+	glUniformMatrix4fv(vSkewLoc, 1, GL_TRUE, (GLfloat*)skewMatrix);
 
 	// colors
 	GLuint vfColorLoc = glGetAttribLocation(myShaderProgram, "vfColor");

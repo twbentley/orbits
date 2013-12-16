@@ -32,6 +32,7 @@ BezierSurface* bezier;
 Button* startButton;
 Button* pauseImage;
 Button* resetButton;
+Button* asteroidButton;
 
 // Number of objects in world
 int NUM_OBJECTS = 2;
@@ -130,6 +131,9 @@ void Initialize()
 	resetButton = new Button(0.5f, 0.0f, "button_reset");
 	Matrix4::SetPositionMatrix(resetButton->transMatrix, 0.5f, -1.285f, 0.0f);
 	resetButton->Init(button_program);
+	asteroidButton = new Button(0.5f, 0.0f, "button_asteroid");
+	Matrix4::SetPositionMatrix(asteroidButton->transMatrix, 0.5f, -1.285f, 0.0f);
+	asteroidButton->Init(button_program);
 	// BUTTON
 
 	// Load shaders and use resulting shader program
@@ -188,7 +192,13 @@ void Display()
 		resetButton->Render();
 	}
 	else if(gameState == PLAY)
+	{
 		CalcGravity();
+
+		
+		asteroidButton->Update();
+		asteroidButton->Render();
+	}
 
 	if(gameState == PLAY || gameState == PAUSE)
 	{
@@ -266,6 +276,11 @@ void Input()
 			cam.Reset();
 			cam.position = Vector3(0,0,0);
 			Initialize();
+		}
+		else if( gameState == PLAY && (cursorX < asteroidButton->vertices[1].x + asteroidButton->transMatrix[0][3] && cursorX > asteroidButton->vertices[3].x + asteroidButton->transMatrix[0][3])
+			&& (cursorY < asteroidButton->vertices[1].y + asteroidButton->transMatrix[1][3] && cursorY > asteroidButton->vertices[3].y + + asteroidButton->transMatrix[1][3]) )
+		{
+			// AsteroidAttack();
 		}
 	}
 }

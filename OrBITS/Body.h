@@ -29,6 +29,8 @@ public:
 	Vector4* colors;
 	Matrix4 transMatrix;
 	Matrix4 rotMatrix;
+	Matrix4 scaleMatrix;
+	Matrix4 skewMatrix;
 
 	GLuint myShaderProgram;
 	GLuint myBuffer;

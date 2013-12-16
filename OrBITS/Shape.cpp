@@ -91,6 +91,15 @@ void Shape::InitOpenGL(GLuint program)
 	GLuint vTransLoc = glGetUniformLocation(myShaderProgram, "vTrans");
 	glUniformMatrix4fv(vTransLoc, 1, GL_TRUE, (GLfloat*)transMatrix);
 
+	// Set value of scale for this object
+	GLuint vScaleLoc = glGetUniformLocation(myShaderProgram, "vScale");
+	glUniformMatrix4fv(vScaleLoc, 1, GL_TRUE, (GLfloat*)scaleMatrix);
+
+	// Set value of skew for this object
+	GLuint vSkewLoc = glGetUniformLocation(myShaderProgram, "vSkew");
+	glUniformMatrix4fv(vSkewLoc, 1, GL_TRUE, (GLfloat*)skewMatrix);
+
+
 	// Set up colors for this object
 	GLuint vfColorLoc = glGetAttribLocation(myShaderProgram, "vfColor");
 	glEnableVertexAttribArray(vfColorLoc);
@@ -114,6 +123,11 @@ void Shape::Render()
 	glUniformMatrix4fv(vRotateLoc, 1, GL_TRUE, (GLfloat*)rotMatrix);
 	GLuint vTransLoc = glGetUniformLocation(myShaderProgram, "vTrans");
 	glUniformMatrix4fv(vTransLoc, 1, GL_TRUE, (GLfloat*)transMatrix);
+	GLuint vScaleLoc = glGetUniformLocation(myShaderProgram, "vScale");
+	glUniformMatrix4fv(vScaleLoc, 1, GL_TRUE, (GLfloat*)scaleMatrix);
+	GLuint vSkewLoc = glGetUniformLocation(myShaderProgram, "vSkew");
+	glUniformMatrix4fv(vSkewLoc, 1, GL_TRUE, (GLfloat*)skewMatrix);
+
 
 	// Draw points
 	glDrawArrays(GL_TRIANGLES, 0, NUM_POINTS);
