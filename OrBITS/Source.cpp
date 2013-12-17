@@ -161,9 +161,9 @@ void Initialize()
 	shapes = new Shape*[NUM_OBJECTS];
 	shapes[0] = cube;
 	shapes[1] = sphere;
-	//GenSystem();
+	GenSystem();
     //GenMoonDemo();
-	GenTwoBody();
+	//GenTwoBody();
 	//AsteroidAttack();
 
     // Initialize the vertex position attribute from the vertex shader
@@ -454,7 +454,7 @@ void GenTwoBody()
 
 void GenSystem()
 {
-	NUM_BODIES = 7;
+	NUM_BODIES = 20;
 	Body* p1;
 	Body* theSun = new Body(3, Vector3(0, 0, 0), Vector3(0,0,0), SUN, program);
 	theSun->Init();
@@ -488,7 +488,7 @@ void GenSystem()
 
 		p1->SetOrbit(*theSun, 
 			minRadius + (rand() % 10 + 1)*(rankScalar), 
-			Vector3(((rand() % 200 + 1) - 100)*.001f, 1 + ((rand() % 200 + 1) - 100)*.001f, ((rand() % 200 + 1) - 100)*.001f), 
+			Vector3(((rand() % 200 + 1) - 100)*.001f, ((rand() % 200 + 1) - 100)*.001f, ((rand() % 200 + 1) - 100)*.001f), 
 			0, 
 			semiMajLMult);
 		p1->Init();
@@ -566,10 +566,23 @@ void PlanetCollRes(Body& a, Body& b)
 
 		// Fixes pos, so balls are just barely contacting
 		Vector3 move = Vector3::normalize(toB);
-		move *= overlap / 2.f;
-		b.pos += move;
-		move *= -1;
-		a.pos += move;
+		if ((a.type == SUN && b.type != SUN) || (a.type == PLANET && b.type == ASTEROID)) // ONLY MOVE 'B'
+		{
+			move *= overlap;
+			b.pos += move;
+		}
+		else if ((b.type == SUN && a.type != SUN) || (b.type == PLANET && a.type == ASTEROID)) // ONLY MOVE 'A'
+		{
+			move *= -overlap;
+			a.pos += move;
+		}
+		else // MOVE BOTH
+		{
+			move *= overlap / 2.f;
+			b.pos += move;
+			move *= -1;
+			a.pos += move;
+		}
 
 		// First, find the normalized vector n from the center of 
 		// circle1 to the center of circle2
