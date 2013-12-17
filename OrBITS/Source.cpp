@@ -24,8 +24,6 @@ GLFWwindow* window;
 GLuint program;
 // Shader program for buttons/menu
 GLuint button_program;
-// Shapes in world
-Shape** shapes;
 // Celestial Bodies
 std::vector<Body*> bodies;
 int NUM_BODIES;
@@ -48,8 +46,6 @@ GLuint prevPauseState;
 GLuint currPauseState;
 STATE gameState = MENU;
 
-unsigned char * data;
-GLuint textureID;
 double cursorX;
 double cursorY;
 
@@ -69,7 +65,7 @@ void CalcGravity();		// Updates gravitation on planets
 void AsteroidAttack();	// Spawn number of asteroids surrounding Sun of set radius
 void PlanetCollRes(Body& a, Body& b);
 
-int main(int argc, char **argv)
+int main()//int argc, char **argv)
 {	
 	// Set up glfw and display window
 	if(glfwInit() == 0) return 1;
@@ -91,13 +87,13 @@ int main(int argc, char **argv)
 		glfwPollEvents();
 	}
 
-	// Delete objects;
-	for(int i = 0; i < NUM_OBJECTS; i++)
-	{
-		delete shapes[i];
-	}
-	// Delete array
-	delete [] shapes;
+	delete asteroidButton;
+	delete startButton;
+	delete resetButton;
+	delete bezier;
+	for(int i = 0; i < bodies.size(); i++)
+		delete bodies[i];
+	bodies.clear();
 		
 	// Close and clean up glfw window
 	glfwDestroyWindow(window);
@@ -111,11 +107,9 @@ int main(int argc, char **argv)
 void Initialize()
 {
 	srand(time(NULL));
-	// Set world size in 3 dimensions
-	WORLD_SIZE = Vector3(100.f, 100.0f, 100.f);
 
 	// Set up depth in OpenGL
-	//glEnable(GL_TEXTURE_2D);
+	glEnable(GL_TEXTURE_2D);
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
 
@@ -150,26 +144,18 @@ void Initialize()
 	glUniformMatrix4fv(viewMat_loc, 1, GL_FALSE, cam.ViewMatrix());
 	GLuint projMat_loc = glGetUniformLocation(program, "projection");
 	glUniformMatrix4fv(projMat_loc, 1, GL_FALSE, cam.ProjectionMatrix());
-	
-	Cube* cube = new Cube( 0.15f, Vector3(0.0f, 0.f, 0.05f), Vector3(8.0f, 0.7f, -35.0f));
-	cube->Init(program);
-	Sphere* sphere = new Sphere(5.0f, Vector3(0.0f, 0.f, 0.f), Vector3(0.f, 0.f, 0.f), 50);
-	sphere->Init(program);
 
 	bezier = CreateBezierSurf();
 
-	shapes = new Shape*[NUM_OBJECTS];
-	shapes[0] = cube;
-	shapes[1] = sphere;
 	GenSystem();
     //GenMoonDemo();
 	//GenTwoBody();
 	//AsteroidAttack();
 
     // Initialize the vertex position attribute from the vertex shader
-    //GLuint loc = glGetAttribLocation( program, "vPosition" );
-    //glEnableVertexAttribArray( loc );
-    //glVertexAttribPointer( loc, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0) );
+    GLuint loc = glGetAttribLocation( program, "vPosition" );
+    glEnableVertexAttribArray( loc );
+    glVertexAttribPointer( loc, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0) );
 
 	// Enable transparency
 	glEnable (GL_BLEND);
@@ -213,10 +199,10 @@ void Display()
 		// Update and render all objects
 		for (int i = 0; i <  NUM_OBJECTS; i++)
 		{
-			if(gameState == PLAY)
+			/*if(gameState == PLAY)
 				shapes[i]->Update();
 
-			//shapes[i]->Render();
+			shapes[i]->Render();*/
 		}
 
 		bezier->Display();
@@ -443,11 +429,11 @@ void GenTwoBody()
 
 	bodies.clear();
 	
-	Body* x = new Body(1.f, Vector3(-5,0,0), Vector3(0, 0, 0), PLANET, program);
+	Body* x = new Body(1.0f, Vector3(-5.0f, 0.0f, 0.0f), Vector3(0.0f, 0.0f, 0.0f), PLANET, program);
 	x->Init();
 	bodies.push_back(x);
 
-	Body* y = new Body(1.f, Vector3(5.f,0.f,0.f), Vector3(0.f, 0.001f, -0.005), PLANET, program);
+	Body* y = new Body(1.0f, Vector3(5.0f, 0.0f, 0.0f), Vector3(0.f, 0.001f, -0.005f), PLANET, program);
 	y->Init();
 	bodies.push_back(y);
 }
@@ -463,12 +449,12 @@ void GenSystem()
 
 	for(int i = 1; i < NUM_BODIES; i++)
 	{
-		float rankScalar = static_cast<float>(i*.1f); // further away a planet is, higher the value
+		float rankScalar = static_cast<float>(i * 0.1f); // further away a planet is, higher the value
 
 		p1 = new Body((.2f) + ((rand() % 10 + 1) - (5-rankScalar*2.f))*.015f, Vector3(0, 0, 0), Vector3(0,0,0), PLANET, program);
 		//p1 = new Body((.2f) + ((rand() % 10 + 1))*.01f, Vector3(0, 0, 0), Vector3(0,0,0), PLANET, program);
 		bodies.push_back(p1);
-		float semiMajLMult = (rand() % 4+1);
+		int semiMajLMult = (rand() % 4 + 1);
 		if(semiMajLMult <= 4)
 		{
 			semiMajLMult = 1;
@@ -492,9 +478,15 @@ void GenSystem()
 			0, 
 			semiMajLMult);
 		p1->Init();
+
+		// Clean up
+		p1 = nullptr;
 	}
+	// Clean up
+	theSun = nullptr;
 }
 
+// No memory leaks
 void CalcGravity()
 {
 	Vector3 totalG = Vector3(0, 0, 0);
@@ -539,17 +531,17 @@ void CalcGravity()
 
 void AsteroidAttack()
 {
-	float numAsteroids = 100;
+	int numAsteroids = 100;
 	int oldNumBodies = NUM_BODIES;
 	NUM_BODIES += numAsteroids;
 	Vector3 astPos;
 	for (int i = 0; i < numAsteroids; i++)
 	{
-		astPos.x = rand()%100 - 50;
-		astPos.y = rand()%100 - 50;
-		astPos.z = rand()%100 - 50;
+		astPos.x = static_cast<float>(rand() % 100 - 50);
+		astPos.y = static_cast<float>(rand() % 100 - 50);
+		astPos.z = static_cast<float>(rand() % 100 - 50);
 		astPos = Vector3::normalize(astPos);
-		astPos *=  20;
+		astPos *=  20.0f;
 		bodies.push_back(new Body((.05f) + ((rand() % 10 + 1))*.004f, astPos, Vector3(0,0,0), ASTEROID, program));
 		(bodies[oldNumBodies + i])->Init();
 	}
@@ -599,7 +591,7 @@ void PlanetCollRes(Body& a, Body& b)
 		// optimizedP =  2(a1 - a2)
 		//              -----------
 		//                m1 + m2
-		float optimizedP = (2.0 * (a1 - a2)) / (b.mass + a.mass);
+		float optimizedP = (2.0f * (a1 - a2)) / (b.mass + a.mass);
 
 		// Calculate v1', the new movement vector of circle1
 		// v1' = v1 - optimizedP * m2 * n

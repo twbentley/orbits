@@ -1,6 +1,11 @@
 #include "Body.h"
 using namespace std;
 
+Body::Body(void)
+{
+
+}
+
 Body::Body(float radius, Vector3 pos, Vector3 vel, string type, GLuint myShaderProgram)
 {
 	this->radius = radius;
@@ -26,6 +31,9 @@ Body::Body(float radius, Vector3 pos, Vector3 vel, string type, GLuint myShaderP
 Body::~Body(void)
 {
 	delete sphere;
+
+	if (colors != nullptr)
+		delete[] colors;
 }
 
 void Body::Init()

@@ -39,6 +39,7 @@ Cube& Cube::operator= (const Cube& toCopy)
 
 Cube::~Cube(void)
 {
+	int i = 0;
 }
 
 void Cube::Init(GLuint program)

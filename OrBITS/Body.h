@@ -39,7 +39,7 @@ public:
 	int frameCount;
 	int NUM_POINTS; // for trail
 
-
+	Body(void);
 	Body(float radius, Vector3 pos, Vector3 vel, std::string type, GLuint myShaderProgram);
 	~Body(void);
 

@@ -14,7 +14,10 @@ Sphere::Sphere(GLfloat width, Vector3 vel, Vector3 pos, int resolution) : Shape(
 	NUM_VERTS = nRings * nSegments;
 }
 
-Sphere::~Sphere(void) { }
+Sphere::~Sphere(void)
+{
+	int i = 0;
+}
 
 // Initialize sphere
 void Sphere::Init(GLuint program)
@@ -113,6 +116,9 @@ void Sphere::GenerateVertices()
 			}
 		}
 	}
+
+	delete [] verts;
+	delete [] indices;
 
 	//for(int i = 0; i < rings.size(); i++)
 	//{

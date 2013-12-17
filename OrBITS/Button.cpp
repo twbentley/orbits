@@ -13,6 +13,15 @@ Button::Button(GLfloat width, GLfloat depth, char* imageName)
 
 Button::~Button(void)
 {
+	if(vertices != nullptr)
+		delete [] vertices;
+	if(colors != nullptr)
+		delete [] colors;
+	if(UVs != nullptr)
+		delete [] UVs;
+
+	//glDeleteBuffers(1, &vao);
+	//glDeleteTextures(1, &textureID);
 }
 
 void Button::Init(GLuint program)
@@ -79,7 +88,7 @@ void Button::InitOpenGL(GLuint program)
 	glUniformMatrix4fv(vTransLoc, 1, GL_TRUE, (GLfloat*)transMatrix);
 
 	// TODO: Load Texture
-	FIBITMAP* bitmap = FreeImage_Load(FreeImage_GetFileType("./../Images/button_start.png", 0), imagePath.c_str() );
+	FIBITMAP* bitmap = FreeImage_Load(FreeImage_GetFileType(imagePath.c_str(), 0), imagePath.c_str() );
 	FIBITMAP* pImage = FreeImage_ConvertTo32Bits(bitmap);
 	int nWidth = FreeImage_GetWidth(pImage);
 	int nHeight = FreeImage_GetHeight(pImage);
@@ -89,6 +98,9 @@ void Button::InitOpenGL(GLuint program)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
+	glFinish();
+
+	//FreeImage_Unload(bitmap);
 	FreeImage_Unload(pImage);
 	glFlush();
 }
@@ -137,14 +149,4 @@ void Button::Update()
 	glUniformMatrix4fv(vRotateLoc, 1, GL_TRUE, (GLfloat*)rotMatrix);
 	GLuint vTransLoc = glGetUniformLocation(myShaderProgram, "vTrans");
 	glUniformMatrix4fv(vTransLoc, 1, GL_TRUE, (GLfloat*)transMatrix);
-}
-
-void Button::Click(void)
-{
-	// TODO: Load Texture
-	FIBITMAP* bitmap = FreeImage_Load(FreeImage_GetFileType("./blank2.bmp", 0), "./blank2.bmp");
-	FIBITMAP* pImage = FreeImage_ConvertTo32Bits(bitmap);
-	int nWidth = FreeImage_GetWidth(pImage);
-	int nHeight = FreeImage_GetHeight(pImage);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, nWidth, nHeight, 0, GL_BGRA, GL_UNSIGNED_BYTE, FreeImage_GetBits(pImage));
 }
