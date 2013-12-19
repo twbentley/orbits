@@ -1,6 +1,5 @@
 #pragma once
 #include "Shape.h"
-#include "vec.h"
 
 #include <GL/FreeImage.h>
 #include <GL/FreeImage.h>
@@ -10,7 +9,6 @@ class Button
 public:
 	Vector3* vertices;
 	Vector3* UVs;
-	Vector4* colors;
 	Matrix4 transMatrix;
 	Matrix4 rotMatrix;
 
@@ -25,7 +23,7 @@ public:
 
 	int NUM_VERTS;
 
-	Button(GLfloat width, GLfloat depth, char* imageName);
+	Button(GLfloat width, GLfloat depth, std::string imageName);
 	~Button(void);
 
 	void Init(GLuint program);

@@ -107,7 +107,7 @@ void Shape::InitOpenGL(GLuint program)
 	glUniform4f(vfColorLoc, 0.0f, 1.0f, 0.0f, 1.0f);
 
 	// Initialize bounding for this object
-	aabb.Init(program);
+	//aabb.Init(program);
 }
 
 // Draw object to screen
@@ -133,7 +133,7 @@ void Shape::Render()
 	glDrawArrays(GL_TRIANGLES, 0, NUM_POINTS);
 
 	// Draw bounding box
-	aabb.Render();
+	//aabb.Render();
 }
 
 // Update shape
@@ -161,7 +161,7 @@ void Shape::Update()
 	Matrix4::SetPositionMatrix(transMatrix, pos.x, pos.y, pos.z);	// This is here and not in update because of game states
 
 	// Bound and check collisions
-	ComputeAABB();
+	//ComputeAABB();
 	//Bounding();
 }
 

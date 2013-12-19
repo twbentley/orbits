@@ -27,9 +27,9 @@ BezierSurface::BezierSurface(GLuint myShaderProgram, std::vector<Vector3> points
 	_colors		= vector<Vector4>( _numberOfTimeStamps * _numberOfTimeStamps * 12 );	// 12 triangles made
 
 	// TODO: Put bezier on start screen only, and fill out space behind
-	float scaleFactor = 1.0f;
-	Matrix4::UpdateScaleMatrix(scaleMatrix, 2.0f, 2.0f, 2.0f);
-	Matrix4::UpdatePositionMatrix(transMatrix, -10.0f * (scaleFactor / 2), -10.0f * (scaleFactor / 2), -10.0f);
+	float scaleFactor = 2.0f;
+	Matrix4::UpdateScaleMatrix(scaleMatrix, scaleFactor, scaleFactor, scaleFactor);
+	Matrix4::UpdatePositionMatrix(transMatrix, 10.0f * (2 * scaleFactor / 3), 10.0f * (2 * scaleFactor / 3), -10.0f);
 	Matrix4::UpdateRotationMatrix(rotMatrix, 'z', 180);
 	Matrix4::UpdateSkewMatrix(skewMatrix, Vector4(0.2f, 0.5f, 0.1f, 1.f));
 

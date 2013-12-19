@@ -15,4 +15,7 @@ static const std::string ASTEROID = "ASTEROID";
 static const int SCREEN_WIDTH = 512;
 static const int SCREEN_HEIGHT = 512;
 
+// Max number of bodies per octant of octree
+static const int MAX_BODIES;
+
 #endif

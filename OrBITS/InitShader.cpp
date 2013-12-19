@@ -41,7 +41,7 @@ readShaderSource(const char* shaderFile)
         }
     }
 
-	std::cout << buf << std::endl;
+//	std::cout << buf << std::endl;
 
     return buf;
 }

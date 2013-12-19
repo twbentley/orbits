@@ -1,3 +1,6 @@
+// Need to include this before anything else
+#include <vld.h>
+
 #include "Cube.h"
 #include "Sphere.h"
 #include "BezierSurface.h"
@@ -5,18 +8,21 @@
 #include "Button.h"
 #include "Globals.h"
 #include "Body.h"
+#include "Container.h"
+#include "Octree.h"
 
 #include <vector>
 #include <random>
 #include <time.h>
 
 // Define for leak detection
-#define _CRTDBG_MAP_ALLOC
+//#define _CRTDBG_MAP_ALLOC
 
 // Prevent console window from opening
 #pragma comment(linker, "/subsystem:\"windows\" /entry:\"mainCRTStartup\"")
 
-enum STATE { MENU, PLAY, PAUSE };
+enum STATE { MENU, INSTRUCTIONS, PLAY, PAUSE, CREDITS };
+enum GEN_STATE { SYSTEM, TWOBODY };
 
 // GLFW window
 GLFWwindow* window;
@@ -27,27 +33,42 @@ GLuint button_program;
 // Celestial Bodies
 std::vector<Body*> bodies;
 int NUM_BODIES;
+
 BezierSurface* bezier;
+
+Octree* octree;
+float timeUntilUpdate = 0;
+int octreeCounter = 0;
 
 Button* startButton;
 Button* pauseImage;
 Button* resetButton;
 Button* asteroidButton;
-
-// Number of objects in world
-int NUM_OBJECTS = 2;
+Button* quitButton;
+Button* instructions;
+Button* credits;
 
 Camera cam;
 float prevSeconds;
 
 GLuint prevMouseState;
 GLuint currMouseState;
+GLuint prevMouse2State;
+GLuint currMouse2State;
 GLuint prevPauseState;
 GLuint currPauseState;
 STATE gameState = MENU;
+GEN_STATE systemState;
 
+
+// Mouse cursor
 double cursorX;
 double cursorY;
+
+// Octree
+Container* container;
+Vector3 qmax;
+Vector3 qmin;
 
 // Forward initialization
 void Initialize();
@@ -64,6 +85,10 @@ void GenTwoBody();		// Inits two planets
 void CalcGravity();		// Updates gravitation on planets
 void AsteroidAttack();	// Spawn number of asteroids surrounding Sun of set radius
 void PlanetCollRes(Body& a, Body& b);
+void SetupOctree();
+void InitializeOctree();
+void TestOctree();
+void Cleanup();
 
 int main()//int argc, char **argv)
 {	
@@ -78,6 +103,7 @@ int main()//int argc, char **argv)
 	glewInit();
 	
 	Initialize();
+	//SetupOctree();
 
 	// GLFW "game loop"
 	while(!glfwWindowShouldClose(window))
@@ -87,20 +113,14 @@ int main()//int argc, char **argv)
 		glfwPollEvents();
 	}
 
-	delete asteroidButton;
-	delete startButton;
-	delete resetButton;
-	delete bezier;
-	for(int i = 0; i < bodies.size(); i++)
-		delete bodies[i];
-	bodies.clear();
-		
+	Cleanup();
+
 	// Close and clean up glfw window
 	glfwDestroyWindow(window);
 	glfwTerminate();
 
 	// Get memory leaks
-	_CrtDumpMemoryLeaks();
+	//_CrtDumpMemoryLeaks();
 }
 
 // Initialize world
@@ -120,21 +140,40 @@ void Initialize()
 	// Get current time
 	prevSeconds = glfwGetTime();
 
-	// BUTTON
+	#pragma region Buttons 
+
 	button_program = InitShader("texvshader.glsl", "texfshader.glsl");
 
 	startButton = new Button(0.5f, 0.0f, "button_start");
 	startButton->Init(button_program);
+
 	pauseImage = new Button(0.5f, 0.0f, "paused_new");
 	Matrix4::SetPositionMatrix(pauseImage->transMatrix, 0.0f, 1.285f, 0.0f);
 	pauseImage->Init(button_program);
+
 	resetButton = new Button(0.5f, 0.0f, "button_reset");
 	Matrix4::SetPositionMatrix(resetButton->transMatrix, 0.5f, -1.285f, 0.0f);
 	resetButton->Init(button_program);
+
 	asteroidButton = new Button(0.5f, 0.0f, "button_asteroid");
 	Matrix4::SetPositionMatrix(asteroidButton->transMatrix, 0.5f, -1.285f, 0.0f);
 	asteroidButton->Init(button_program);
-	// BUTTON
+
+	quitButton = new Button(0.5f, 0.0f, "button_quit");
+	Matrix4::SetPositionMatrix(quitButton->transMatrix, -0.5f, -1.285f, 0.0f);
+	quitButton->Init(button_program);
+
+	instructions = new Button(0.5f * 2, 0.0f, "instructions");
+	Matrix4::SetPositionMatrix(instructions->transMatrix, 0.5f - instructions->width/2, 0.5f - instructions->width/2, 0.0f);
+	instructions->Init(button_program);
+
+	credits = new Button(0.5f * 2, 0.0f, "credits");
+	Matrix4::SetPositionMatrix(credits->transMatrix, 0.5f - credits->width/2, 0.5f - credits->width/2, 0.0f);
+	credits->Init(button_program);
+
+	#pragma endregion
+
+	octree = new Octree(Vector3(-100.0f, -100.f, -100.f), Vector3(100.f, 100.f, 100.f), 1);
 
 	// Load shaders and use resulting shader program
 	program = InitShader("vshader.glsl", "fshader.glsl");
@@ -147,10 +186,10 @@ void Initialize()
 
 	bezier = CreateBezierSurf();
 
-	GenSystem();
+	//GenSystem();
     //GenMoonDemo();
 	//GenTwoBody();
-	//AsteroidAttack();
+	////AsteroidAttack();
 
     // Initialize the vertex position attribute from the vertex shader
     GLuint loc = glGetAttribLocation( program, "vPosition" );
@@ -166,7 +205,7 @@ void Initialize()
 	glClearColor(1.0,1.0,1.0,1.0);
 }
 
-// Display objects
+// Display objects and update them
 void Display()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -175,6 +214,14 @@ void Display()
 	{
 		startButton->Update();
 		startButton->Render();
+
+		bezier->Update();
+		bezier->Display();
+	}
+	else if(gameState == INSTRUCTIONS)
+	{
+		instructions->Update();
+		instructions->Render();
 	}
 	else if(gameState == PAUSE)
 	{
@@ -183,48 +230,35 @@ void Display()
 
 		resetButton->Update();
 		resetButton->Render();
+
+		quitButton->Update();
+		quitButton->Render();
 	}
 	else if(gameState == PLAY)
 	{
-		bezier->Update();
-
 		CalcGravity();
 
 		asteroidButton->Update();
 		asteroidButton->Render();
 	}
+	else if(gameState == CREDITS)
+	{
+		credits->Update();
+		credits->Render();
+	}
 
 	if(gameState == PLAY || gameState == PAUSE)
 	{
-		// Update and render all objects
-		for (int i = 0; i <  NUM_OBJECTS; i++)
-		{
-			/*if(gameState == PLAY)
-				shapes[i]->Update();
-
-			shapes[i]->Render();*/
-		}
-
-		bezier->Display();
-
         for (int i = 0; i < NUM_BODIES; i++)
         {
 			if(gameState == PLAY)
 			{
+				//octree->performUpdate(bodies, octree);
                 bodies[i]->Update();
 			}
 
             bodies[i]->Render();
         }
-
-		//// Resolve conflicts between all objects
-		//for(int i = 0; i < NUM_OBJECTS; i++)
-		//{
-		//	for(int j = i + 1; j < NUM_OBJECTS; j++)
-		//	{
-		//		ResolveCol(*shapes[i], *shapes[j]);
-		//	}
-		//}
 	}
 
 	glfwSwapBuffers(window);
@@ -234,7 +268,9 @@ void Display()
 void Input()
 {
 	prevMouseState = currMouseState;
-	currMouseState = glfwGetMouseButton(window, 0);
+	currMouseState = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
+	prevMouse2State = currMouse2State;
+	currMouse2State = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT);
 	prevPauseState = currPauseState;
 	currPauseState = glfwGetKey(window, GLFW_KEY_P);
 	
@@ -249,6 +285,13 @@ void Input()
 			gameState = (gameState == PLAY) ? PAUSE : PLAY;
 	}
 
+	if(gameState == INSTRUCTIONS && (prevMouse2State == GLFW_PRESS && currMouse2State == GLFW_RELEASE) )
+	{
+		gameState = PLAY;
+		systemState = SYSTEM;
+		GenSystem();
+	}
+
 	if(prevMouseState == GLFW_PRESS && currMouseState == GLFW_RELEASE)
 	{
 		// Get cursor position (0,0 is upper left hand corner)
@@ -259,22 +302,46 @@ void Input()
 		cursorY = (cursorY / SCREEN_HEIGHT);
 		cursorY = (cursorY * 2.0 - 1.0) * -1.0;
 		
-		// If button
+		// Start the game
 		if(gameState == MENU && (cursorX < startButton->vertices[1].x && cursorX > startButton->vertices[3].x) && (cursorY < startButton->vertices[1].y && cursorY > startButton->vertices[3].x) )
 		{
-			gameState = PLAY;
+			gameState = INSTRUCTIONS;
 		}
+		else if(gameState == INSTRUCTIONS)
+		{
+			gameState = PLAY;
+			systemState = TWOBODY;
+			GenTwoBody();
+		}
+		// Reset the camera and the world
 		else if(gameState == PAUSE && (cursorX < resetButton->vertices[1].x + resetButton->transMatrix[0][3] && cursorX > resetButton->vertices[3].x + resetButton->transMatrix[0][3])
 			&& (cursorY < resetButton->vertices[1].y + resetButton->transMatrix[1][3] && cursorY > resetButton->vertices[3].y + + resetButton->transMatrix[1][3]) )
 		{
 			cam.Reset();
 			cam.position = Vector3(0,0,0);
+			Cleanup();
 			Initialize();
+			if(systemState == TWOBODY)
+				GenTwoBody();
+			else if(systemState == SYSTEM)
+				GenSystem();
 		}
+		// Launch asteroids
 		else if( gameState == PLAY && (cursorX < asteroidButton->vertices[1].x + asteroidButton->transMatrix[0][3] && cursorX > asteroidButton->vertices[3].x + asteroidButton->transMatrix[0][3])
 			&& (cursorY < asteroidButton->vertices[1].y + asteroidButton->transMatrix[1][3] && cursorY > asteroidButton->vertices[3].y + + asteroidButton->transMatrix[1][3]) )
 		{
 			AsteroidAttack();
+		}
+		// Quit the game
+		else if( gameState == PAUSE && (cursorX < quitButton->vertices[1].x + quitButton->transMatrix[0][3] && cursorX > quitButton->vertices[3].x + quitButton->transMatrix[0][3])
+			&& (cursorY < quitButton->vertices[1].y + quitButton->transMatrix[1][3] && cursorY > quitButton->vertices[3].y + + quitButton->transMatrix[1][3]) )
+		{
+			gameState = CREDITS;
+		}
+		// Exit the program
+		else if( gameState == CREDITS)
+		{
+			glfwSetWindowShouldClose(window, true);
 		}
 	}
 }
@@ -423,6 +490,7 @@ void GenMoonDemo()
 	bodies.push_back(moon);
 }
 
+// No leaks
 void GenTwoBody()
 {
 	NUM_BODIES = 2;
@@ -438,13 +506,13 @@ void GenTwoBody()
 	bodies.push_back(y);
 }
 
+// No leaks
 void GenSystem()
 {
-	NUM_BODIES = 20;
+	NUM_BODIES = 8;
 	Body* p1;
 	Body* theSun = new Body(3, Vector3(0, 0, 0), Vector3(0,0,0), SUN, program);
 	theSun->Init();
-	bodies = std::vector<Body*>();
 	bodies.push_back(theSun);
 
 	for(int i = 1; i < NUM_BODIES; i++)
@@ -474,7 +542,7 @@ void GenSystem()
 
 		p1->SetOrbit(*theSun, 
 			minRadius + (rand() % 10 + 1)*(rankScalar), 
-			Vector3(((rand() % 200 + 1) - 100)*.001f, ((rand() % 200 + 1) - 100)*.001f, ((rand() % 200 + 1) - 100)*.001f), 
+			Vector3(((rand() % 200 + 1) - 100)*.001f, .9f + ((rand() % 200 + 1) - 100)*.001f, ((rand() % 200 + 1) - 100)*.001f), 
 			0, 
 			semiMajLMult);
 		p1->Init();
@@ -519,14 +587,22 @@ void CalcGravity()
 		totalG = Vector3(0,0,0);
 	}
 
-	// Rigorous collision detection (sphere-sphere)
-	for(int i = 0; i < NUM_BODIES; i++)
-	{
-		for(int j = i + 1; j < NUM_BODIES; j++)
-		{
-			PlanetCollRes(*bodies[i], *bodies[j]);
-		}
-	}
+	// TODO: Call octree update!
+	//if(octreeCounter >= 5)
+	//{
+		octree->advance(bodies, octree, 25 / 1000.0, timeUntilUpdate);
+	//	octreeCounter = 0;
+	//}
+	//octreeCounter++;
+
+	//// Rigorous collision detection (sphere-sphere)
+	//for(int i = 0; i < NUM_BODIES; i++)
+	//{
+	//	for(int j = i + 1; j < NUM_BODIES; j++)
+	//	{
+	//		PlanetCollRes(*bodies[i], *bodies[j]);
+	//	}
+	//}
 }
 
 void AsteroidAttack()
@@ -547,60 +623,78 @@ void AsteroidAttack()
 	}
 }
 
-// Based off of sphere collision from - 
-void PlanetCollRes(Body& a, Body& b)
+void Cleanup()
 {
-	float dist = Vector3::dist(a.pos, b.pos);
-	if (dist < a.radius + b.radius) //they are intersecting
+	// Deallocate buttons
+	delete asteroidButton;
+	delete startButton;
+	delete resetButton;
+	delete pauseImage;
+	delete quitButton;
+	delete instructions;
+	delete credits;
+
+	// Deallocate bezier
+	delete bezier;
+
+	// Deallocate octree
+	delete octree;
+
+	// Deallocate all bodies
+	for(int i = 0; i < bodies.size(); i++)
+		delete bodies[i];
+	bodies.clear();
+}
+
+// Deprecated
+void SetupOctree()
+{
+	InitializeOctree();
+	TestOctree();
+
+	delete container;
+}
+// Deprecated
+void InitializeOctree()
+{
+	// Create a new Octree centered at the origin
+	// with physical dimension 2x2x2
+	//container = new Container(Vector3(0,0,0), Vector3(500,500,500), );
+
+	//// Create a bunch of random points
+	//const int nPoints = 1 * 1000 * 1000;
+	//for(int i=0; i<nPoints; ++i) {
+	//	points.push_back(randVec3());
+	//}
+	//printf("Created %ld points\n", points.size()); fflush(stdout);
+
+	// Insert the points into the octree
+	//octreePoints = new OctreePoint[nPoints];
+	for(int i = 0; i < NUM_BODIES; i++)
 	{
-		float overlap = (a.radius + b.radius) - dist;
-		Vector3 toB = b.pos - a.pos;
-
-		// Fixes pos, so balls are just barely contacting
-		Vector3 move = Vector3::normalize(toB);
-		if ((a.type == SUN && b.type != SUN) || (a.type == PLANET && b.type == ASTEROID)) // ONLY MOVE 'B'
-		{
-			move *= overlap;
-			b.pos += move;
-		}
-		else if ((b.type == SUN && a.type != SUN) || (b.type == PLANET && a.type == ASTEROID)) // ONLY MOVE 'A'
-		{
-			move *= -overlap;
-			a.pos += move;
-		}
-		else // MOVE BOTH
-		{
-			move *= overlap / 2.f;
-			b.pos += move;
-			move *= -1;
-			a.pos += move;
-		}
-
-		// First, find the normalized vector n from the center of 
-		// circle1 to the center of circle2
-		Vector3 n = b.pos - a.pos; //c1, c2
-		n = Vector3::normalize(n);
-		// Find the length of the component of each of the movement
-		// vectors along n. 
-		// a1 = v1 . n
-		// a2 = v2 . n
-		float a1 = Vector3::dot(b.vel,n);
-		float a2 = Vector3::dot(a.vel,n);
-
-		// Using the optimized version, 
-		// optimizedP =  2(a1 - a2)
-		//              -----------
-		//                m1 + m2
-		float optimizedP = (2.0f * (a1 - a2)) / (b.mass + a.mass);
-
-		// Calculate v1', the new movement vector of circle1
-		// v1' = v1 - optimizedP * m2 * n
-		Vector3 bNew = b.vel - (n * (optimizedP * a.mass));
-		b.vel = bNew;
-
-		// Calculate v1', the new movement vector of circle1
-		// v2' = v2 + optimizedP * m1 * n
-		Vector3 aNew = a.vel + (n * (optimizedP * b.mass));
-		a.vel = aNew;
+		//octreePoints[i].setPosition(points[i]);
+		container->Insert(bodies[i]);
 	}
+	//printf("Inserted points to octree\n"); fflush(stdout);
+
+	// Create a very small query box. The smaller this box is
+	// the less work the octree will need to do. This may seem
+	// like it is exagerating the benefits, but often, we only
+	// need to know very nearby objects.
+	qmin = Vector3(-50,-50,-50);
+	qmax = Vector3(50,50,50);
+
+	// Remember: In the case where the query is relatively close
+	// to the size of the whole octree space, the octree will
+	// actually be a good bit slower than brute forcing every point!
+}
+// Deprecated
+void TestOctree()
+{
+	std::vector<Body*> results;
+	container->getPointsInsideBox(qmin, qmax, results);
+
+	//double T = stopwatch() - start;
+	//printf("testOctree found %ld points in %.5f sec.\n", results.size(), T);
+	std::cout << "testOctree found " << results.size() << " points" << std::endl;
 }

@@ -1,6 +1,6 @@
 #include "Button.h"
 
-Button::Button(GLfloat width, GLfloat depth, char* imageName)
+Button::Button(GLfloat width, GLfloat depth, std::string imageName)
 {
 	NUM_VERTS = 4;
 	this->width = width;
@@ -10,45 +10,31 @@ Button::Button(GLfloat width, GLfloat depth, char* imageName)
 	this->imagePath += ".png";
 }
 
-
+// Destructor
 Button::~Button(void)
 {
 	if(vertices != nullptr)
 		delete [] vertices;
-	if(colors != nullptr)
-		delete [] colors;
 	if(UVs != nullptr)
 		delete [] UVs;
-
-	//glDeleteBuffers(1, &vao);
-	//glDeleteTextures(1, &textureID);
 }
 
 void Button::Init(GLuint program)
 {
 	vertices = new Vector3[NUM_VERTS];
 	UVs = new Vector3[NUM_VERTS];
-	colors = new Vector4[NUM_VERTS];
 
+	// This will be a square object of "radius" widht
 	vertices[0] = Vector3( -width	, width		, depth );
 	vertices[1] = Vector3( width	, width		, depth );
 	vertices[2] = Vector3( width	, -width	, depth );
 	vertices[3] = Vector3( -width	, -width	, depth );
 
+	// UVs are hardcoded as this is a square object (aka doesn't need fancy texture mapping)
 	UVs[0] = Vector3( 0.0f, 1.0f, 0.0f );
 	UVs[1] = Vector3( 1.0f, 1.0f, 0.0f );
 	UVs[2] = Vector3( 1.0f, 0.0f, 0.0f );
 	UVs[3] = Vector3( 0.0f, 0.0f, 0.0f );
-
-	std::cout << UVs[0].x << " | " << UVs[0].y <<  std::endl;
-	std::cout << UVs[1].x << " | " << UVs[1].y <<  std::endl;
-	std::cout << UVs[2].x << " | " << UVs[2].y <<  std::endl;
-	std::cout << UVs[3].x << " | " << UVs[3].y <<  std::endl;
-
-	colors[0] = Vector4(1.0f, 0.0f, 0.0f, 1.0f);
-	colors[1] = Vector4(1.0f, 0.0f, 0.0f, 1.0f);
-	colors[2] = Vector4(1.0f, 0.0f, 0.0f, 1.0f);
-	colors[3] = Vector4(1.0f, 0.0f, 0.0f, 1.0f);
 
 	InitOpenGL(program);
 }
@@ -87,7 +73,7 @@ void Button::InitOpenGL(GLuint program)
 	GLuint vTransLoc = glGetUniformLocation(myShaderProgram, "vTrans");
 	glUniformMatrix4fv(vTransLoc, 1, GL_TRUE, (GLfloat*)transMatrix);
 
-	// TODO: Load Texture
+	// Load Texture
 	FIBITMAP* bitmap = FreeImage_Load(FreeImage_GetFileType(imagePath.c_str(), 0), imagePath.c_str() );
 	FIBITMAP* pImage = FreeImage_ConvertTo32Bits(bitmap);
 	int nWidth = FreeImage_GetWidth(pImage);
@@ -100,9 +86,8 @@ void Button::InitOpenGL(GLuint program)
 
 	glFinish();
 
-	//FreeImage_Unload(bitmap);
 	FreeImage_Unload(pImage);
-	glFlush();
+	//glFlush();
 }
 
 void Button::Render()
@@ -112,10 +97,10 @@ void Button::Render()
 	glBindBuffer( GL_ARRAY_BUFFER, myBuffer );
 	glBindVertexArray(vao);
 
-	glActiveTexture(GL_TEXTURE0);
+	//glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, textureID);
-	glBindSampler(0, GL_LINEAR);
-	glUniform1i(glGetUniformLocation(myShaderProgram, "myTextureSampler"), 0);
+	//glBindSampler(0, GL_LINEAR);
+	//glUniform1i(glGetUniformLocation(myShaderProgram, "myTextureSampler"), 0);
 
 	// Draw points
 	glDrawArrays(GL_QUADS, 0, NUM_VERTS);
@@ -123,23 +108,17 @@ void Button::Render()
 
 void Button::Update()
 {
-	// Rotation, Forces and other physics updates
-	//Matrix4::UpdateRotationMatrix(rotMatrix, 'z', 1.f);
-	//Matrix4::UpdateRotationMatrix(rotMatrix, 'y', .5f);
-	//Matrix4::UpdateRotationMatrix(rotMatrix, 'x', .25f);
-
 	// Use correct shader program and buffers
 	glUseProgram( myShaderProgram );
 	glBindBuffer( GL_ARRAY_BUFFER, myBuffer );
 	glBindVertexArray(vao);
 	glBindTexture(GL_TEXTURE_2D, textureID);
 
-	//Matrix4::SetPositionMatrix(transMatrix, 0.33, 0.0f, 0.0f);
-
+	// Renable vertex attributes every update
 	GLuint loc = glGetAttribLocation( myShaderProgram, "vPosition" );
     glEnableVertexAttribArray( loc );
     glVertexAttribPointer( loc, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0) );
-
+	//
 	GLuint UVloc = glGetAttribLocation( myShaderProgram, "vertexUV" );
     glEnableVertexAttribArray( UVloc );
     glVertexAttribPointer( UVloc, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(sizeof(*vertices) * NUM_VERTS));

@@ -74,6 +74,7 @@
     <ClCompile Include="InitShader.cpp" />
     <ClCompile Include="Matrix3.cpp" />
     <ClCompile Include="Matrix4.cpp" />
+    <ClCompile Include="Octree.cpp" />
     <ClCompile Include="Shape.cpp" />
     <ClCompile Include="Source.cpp" />
     <ClCompile Include="Sphere.cpp" />
@@ -91,12 +92,11 @@
     <ClInclude Include="Container.h" />
     <ClInclude Include="Cube.h" />
     <ClInclude Include="Globals.h" />
-    <ClInclude Include="mat.h" />
     <ClInclude Include="Matrix3.h" />
     <ClInclude Include="Matrix4.h" />
+    <ClInclude Include="Octree.h" />
     <ClInclude Include="Shape.h" />
     <ClInclude Include="Sphere.h" />
-    <ClInclude Include="vec.h" />
     <ClInclude Include="Vector3.h" />
     <ClInclude Include="Vector4.h" />
     <ClInclude Include="WorldData.h" />
@@ -125,7 +125,7 @@
       <Command>xcopy "$(SolutionDir)GL\x86\bin" "$(SolutionDir)$(Configuration)" /y</Command>
     </PostBuildEvent>
     <Link>
-      <AdditionalDependencies>glew32.lib;opengl32.lib;glfw3.lib;freeglut.lib;FreeImage.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glew32.lib;opengl32.lib;glfw3.lib;freeglut.lib;FreeImage.lib;vld.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <ClCompile />

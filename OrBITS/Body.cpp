@@ -16,6 +16,7 @@ Body::Body(float radius, Vector3 pos, Vector3 vel, string type, GLuint myShaderP
 	CalcMass();
 	accel = Vector3(0,0,0);
 
+	// Generate the specified type of body
 	if(this->type == SUN)
 		sphere = new Sphere(this->radius, Vector3(0,0,0), this->pos, 50); // no vel, just visual representation
 	if(this->type == PLANET)
@@ -23,11 +24,13 @@ Body::Body(float radius, Vector3 pos, Vector3 vel, string type, GLuint myShaderP
 	if(this->type == ASTEROID)
 		sphere = new Sphere(this->radius, Vector3(0,0,0), this->pos, 5); // no vel, just visual representation
 
+	// Initialize visuals
 	sphere->Init(myShaderProgram);
 	trail = queue<Vector3>();
 	frameCount = 0;
 }
 
+// Destructor
 Body::~Body(void)
 {
 	delete sphere;
@@ -36,6 +39,7 @@ Body::~Body(void)
 		delete[] colors;
 }
 
+// Initialize a body
 void Body::Init()
 {
 	NUM_POINTS = 100;
@@ -124,6 +128,7 @@ void Body::Update()
 	UpdateTrail();
 }
 
+// Update trail so it has a fixed length
 void Body::UpdateTrail()
 {
 	if (frameCount == 0)
@@ -137,15 +142,9 @@ void Body::UpdateTrail()
 		trail.pop();
 		points.pop_back();
 	}
-
-	/*queue<Vector3> temp = queue<Vector3>(trail);
-	for (int i = 0; i < NUM_POINTS; i++)
-	{
-		points[i] = Vector3(temp.front());
-		temp.pop();
-	}*/
 }
 
+// Reload trail into buffers
 void Body::RenderTrail()
 {
 	// Use the buffer and shader for each circle.
