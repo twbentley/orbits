@@ -22,7 +22,7 @@
 #pragma comment(linker, "/subsystem:\"windows\" /entry:\"mainCRTStartup\"")
 
 enum STATE { MENU, INSTRUCTIONS, PLAY, PAUSE, CREDITS };
-enum GEN_STATE { SYSTEM, TWOBODY };
+enum GEN_STATE { SYSTEM, TWOBODY, MOON };
 
 // GLFW window
 GLFWwindow* window;
@@ -73,21 +73,25 @@ Vector3 qmin;
 // Forward initialization
 void Initialize();
 void CreateShape();
-BezierSurface* CreateBezierSurf(); // WOOOAH, TOTALLY AWESOME DUDE!
+BezierSurface* CreateBezierSurf();
 void Display();
 void Input();
 void cameraInputCheck();
 void TryCircle();
+
 void ResolveCol(Shape& a, Shape&b);
 void GenSystem();       // Inits solar system
 void GenMoonDemo();     // Inits Sun, planet, moon
-void GenTwoBody();		// Inits two planets
+void GenTwoBody();		// Inits two planets - collision test
+void DemoGenSwitch();	// Wrapper for switching which System Generation function to call
 void CalcGravity();		// Updates gravitation on planets
 void AsteroidAttack();	// Spawn number of asteroids surrounding Sun of set radius
 void PlanetCollRes(Body& a, Body& b);
+
 void SetupOctree();
 void InitializeOctree();
 void TestOctree();
+
 void Cleanup();
 
 int main()//int argc, char **argv)
@@ -185,11 +189,6 @@ void Initialize()
 	glUniformMatrix4fv(projMat_loc, 1, GL_FALSE, cam.ProjectionMatrix());
 
 	bezier = CreateBezierSurf();
-
-	//GenSystem();
-    //GenMoonDemo();
-	//GenTwoBody();
-	////AsteroidAttack();
 
     // Initialize the vertex position attribute from the vertex shader
     GLuint loc = glGetAttribLocation( program, "vPosition" );
@@ -289,7 +288,7 @@ void Input()
 	{
 		gameState = PLAY;
 		systemState = SYSTEM;
-		GenSystem();
+		DemoGenSwitch();
 	}
 
 	if(prevMouseState == GLFW_PRESS && currMouseState == GLFW_RELEASE)
@@ -310,8 +309,13 @@ void Input()
 		else if(gameState == INSTRUCTIONS)
 		{
 			gameState = PLAY;
-			systemState = TWOBODY;
-			GenTwoBody();
+
+			// Change the assignment of systemState to change the gravity demo initialized
+				//systemState = TWOBODY;
+				//systemState = MOON;
+				systemState = SYSTEM;
+
+			DemoGenSwitch();
 		}
 		// Reset the camera and the world
 		else if(gameState == PAUSE && (cursorX < resetButton->vertices[1].x + resetButton->transMatrix[0][3] && cursorX > resetButton->vertices[3].x + resetButton->transMatrix[0][3])
@@ -321,10 +325,7 @@ void Input()
 			cam.position = Vector3(0,0,0);
 			Cleanup();
 			Initialize();
-			if(systemState == TWOBODY)
-				GenTwoBody();
-			else if(systemState == SYSTEM)
-				GenSystem();
+			DemoGenSwitch();
 		}
 		// Launch asteroids
 		else if( gameState == PLAY && (cursorX < asteroidButton->vertices[1].x + asteroidButton->transMatrix[0][3] && cursorX > asteroidButton->vertices[3].x + asteroidButton->transMatrix[0][3])
@@ -554,6 +555,16 @@ void GenSystem()
 	theSun = nullptr;
 }
 
+void DemoGenSwitch()
+{
+	if(systemState == TWOBODY)
+		GenTwoBody();
+	else if(systemState == SYSTEM)
+		GenSystem();
+	else if (systemState == MOON)
+		GenMoonDemo();
+}
+
 // No memory leaks
 void CalcGravity()
 {
@@ -607,7 +618,7 @@ void CalcGravity()
 
 void AsteroidAttack()
 {
-	int numAsteroids = 100;
+	int numAsteroids = 50;
 	int oldNumBodies = NUM_BODIES;
 	NUM_BODIES += numAsteroids;
 	Vector3 astPos;
@@ -645,6 +656,7 @@ void Cleanup()
 		delete bodies[i];
 	bodies.clear();
 }
+
 
 // Deprecated
 void SetupOctree()

@@ -79,7 +79,7 @@ void genSystem()
     p1 = new Planet(25 + random(-15,15), new PVector(0, 0, 0), new PVector(0,0,0), PLANET);
     bodies.add(p1);
     float semiMajLMult = random(4);
-    if(semiMajLMult < 3)
+    if(semiMajLMult < 1)
     {
       semiMajLMult = 1;
     }
